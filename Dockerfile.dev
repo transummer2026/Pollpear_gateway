@@ -1,0 +1,3 @@
+FROM rust:1.87-slim AS dev
+
+WORKDIR /app
