@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  repository_dispatch:
+    types: [ci-trigger]
+  workflow_dispatch:
+
+jobs:
+  trigger:
+    name: Trigger
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "CI gateway déclenché"
+
+  ci:
+    needs: trigger
+    uses: transummer2026/.github/.github/workflows/ci-service.yml@main
+    with:
+      service_name: gateway
+      lint_cmd: cargo clippy -- -D warnings
+      test_cmd: cargo test
+      build_cmd: cargo build --release
+      audit_cmd: cargo audit
+      coverage_cmd: cargo tarpaulin --out Xml
+      coverage_format: cobertura
+      coverage_threshold: 0
+    secrets:
+      OTEL_ENDPOINT: ${{ secrets.OTEL_ENDPOINT }}
+      TAILSCALE_AUTHKEY: ${{ secrets.TAILSCALE_AUTHKEY }}
+      DISCORD_WEBHOOK_REPO: ${{ secrets.DISCORD_WEBHOOK_GATEWAY }}
+      GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+      DISPATCH_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
