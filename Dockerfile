@@ -12,11 +12,14 @@ RUN mkdir src && echo "fn main() {}" > src/main.rs \
     && cargo build --release \
     && rm -rf src
 
-RUN cargo install cargo-watch --locked
+RUN cargo install cargo-watch --locked \
+    && useradd -m rust
 
 FROM builder AS dev
 
-COPY . .
+USER rust
+
+COPY --chown=rust:rust . .
 
 CMD ["cargo", "watch", "-x", "run"]
 
