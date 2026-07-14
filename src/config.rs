@@ -10,6 +10,7 @@ pub struct Config {
 pub struct ServiceUrl {
     pub admin_service_url: String,
     pub auth_service_url: String,
+    pub contact_service_url: String,
     pub frontend_url: String,
 }
 
@@ -29,6 +30,9 @@ impl Config {
                 auth_service_url: dotenvy::var("AUTH_SERVICE_URL")
                     .or_else(|_| dotenvy::var("BACKEND_URL"))
                     .expect("AUTH_SERVICE_URL or BACKEND_URL is missing"),
+                contact_service_url: dotenvy::var("CONTACT_SERVICE_URL")
+                    .or_else(|_| dotenvy::var("BACKEND_URL"))
+                    .expect("CONTACT_SERVICE_URL or BACKEND_URL is missing"),
                 frontend_url: dotenvy::var("FRONTEND_URL")
                     .unwrap_or_else(|_| "http://localhost:5173".to_string()),
             },
