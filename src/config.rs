@@ -8,6 +8,7 @@ pub struct Config {
 
 #[derive(Clone)]
 pub struct ServiceUrl {
+    pub admin_service_url: String,
     pub auth_service_url: String,
     pub frontend_url: String,
 }
@@ -22,6 +23,9 @@ impl Config {
         Self {
             port: dotenvy::var("GATEWAY_PORT").unwrap_or_else(|_| "8080".to_string()),
             service_url: ServiceUrl {
+                admin_service_url: dotenvy::var("ADMIN_SERVICE_URL")
+                    .or_else(|_| dotenvy::var("BACKEND_URL"))
+                    .expect("ADMIN_SERVICE_URL or BACKEND_URL is missing"),
                 auth_service_url: dotenvy::var("AUTH_SERVICE_URL")
                     .or_else(|_| dotenvy::var("BACKEND_URL"))
                     .expect("AUTH_SERVICE_URL or BACKEND_URL is missing"),

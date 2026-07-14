@@ -4,6 +4,7 @@ use super::{
     client::{Client, create_client},
     config::ServiceUrl,
     middleware::cors::cors,
+    modules::admin::admin_routes,
     modules::auth::auth_routes,
 };
 use axum::{Router, extract::FromRef};
@@ -35,6 +36,7 @@ pub fn app_routes(service_url: ServiceUrl) -> Router {
         service_url,
     });
     Router::new()
+        .merge(admin_routes())
         .merge(auth_routes())
         .layer(cors_layer)
         .with_state(app_state)
