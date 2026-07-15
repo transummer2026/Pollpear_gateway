@@ -14,6 +14,7 @@ pub struct ServiceUrl {
     pub feed_service_url: String,
     pub me_service_url: String,
     pub polls_service_url: String,
+    pub rooms_service_url: String,
     pub frontend_url: String,
 }
 
@@ -43,6 +44,9 @@ impl Config {
                     .or_else(|_| dotenvy::var("BACKEND_URL"))
                     .expect("ME_SERVICE_URL or BACKEND_URL is missing"),
                 polls_service_url: dotenvy::var("POLLS_SERVICE_URL")
+                    .or_else(|_| dotenvy::var("BACKEND_URL"))
+                    .expect("ME_SERVICE_URL or BACKEND_URL is missing"),
+                rooms_service_url: dotenvy::var("ROOMS_SERVICE_URL")
                     .or_else(|_| dotenvy::var("BACKEND_URL"))
                     .expect("ME_SERVICE_URL or BACKEND_URL is missing"),
                 frontend_url: dotenvy::var("FRONTEND_URL")

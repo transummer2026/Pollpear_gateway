@@ -4,3 +4,4 @@ pub mod contact;
 pub mod feed;
 pub mod me;
 pub mod polls;
+pub mod rooms;
