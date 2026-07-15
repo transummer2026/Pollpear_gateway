@@ -4,7 +4,15 @@ use super::{
     client::{Client, create_client},
     config::ServiceUrl,
     middleware::cors::cors,
+    modules::admin::admin_routes,
     modules::auth::auth_routes,
+    modules::contact::contact_routes,
+    modules::feed::feed_routes,
+    modules::me::me_routes,
+    modules::polls::polls_routes,
+    modules::rooms::rooms_routes,
+    modules::search::search_routes,
+    modules::users::users_routes,
 };
 use axum::{Router, extract::FromRef};
 use tower_http::trace::TraceLayer;
@@ -35,7 +43,15 @@ pub fn app_routes(service_url: ServiceUrl) -> Router {
         service_url,
     });
     Router::new()
+        .merge(admin_routes())
         .merge(auth_routes())
+        .merge(contact_routes())
+        .merge(feed_routes())
+        .merge(me_routes())
+        .merge(polls_routes())
+        .merge(rooms_routes())
+        .merge(search_routes())
+        .merge(users_routes())
         .layer(cors_layer)
         .with_state(app_state)
         .layer(TraceLayer::new_for_http())
