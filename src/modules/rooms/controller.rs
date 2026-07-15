@@ -22,7 +22,7 @@ fn rooms() -> Router<Arc<AppState>> {
             post(service::add_participant),
         )
         .route(
-            "/{id}/participants/{userId]}",
+            "/{id}/participants/{userId}",
             delete(service::remove_participant),
         )
         .route("/{id}/messages", get(service::get_messages))
