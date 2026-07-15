@@ -12,6 +12,7 @@ use super::{
     modules::polls::polls_routes,
     modules::rooms::rooms_routes,
     modules::search::search_routes,
+    modules::users::users_routes,
 };
 use axum::{Router, extract::FromRef};
 use tower_http::trace::TraceLayer;
@@ -50,6 +51,7 @@ pub fn app_routes(service_url: ServiceUrl) -> Router {
         .merge(polls_routes())
         .merge(rooms_routes())
         .merge(search_routes())
+        .merge(users_routes())
         .layer(cors_layer)
         .with_state(app_state)
         .layer(TraceLayer::new_for_http())
