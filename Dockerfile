@@ -17,13 +17,13 @@ RUN cargo install cargo-watch --locked \
 
 FROM builder AS dev
 
-RUN chown -R rust:rust /usr/local/cargo
+RUN chown -R rust:rust /usr/local/cargo /app
 
 USER rust
 
 COPY --chown=rust:rust . .
 
-ENV RUST_LOG=tower_http=trace
+ENV RUST_LOG=debug
 CMD ["cargo", "watch", "-x", "run"]
 
 FROM alpine:3.21 AS prod
