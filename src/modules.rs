@@ -5,3 +5,4 @@ pub mod feed;
 pub mod me;
 pub mod polls;
 pub mod rooms;
+pub mod search;
