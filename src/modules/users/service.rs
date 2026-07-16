@@ -13,7 +13,7 @@ pub async fn update(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.users_service_url.clone(),
         req,
     )
@@ -25,7 +25,7 @@ pub async fn remove(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.users_service_url.clone(),
         req,
     )
@@ -37,7 +37,7 @@ pub async fn report(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.users_service_url.clone(),
         req,
     )
@@ -49,7 +49,7 @@ pub async fn block(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.users_service_url.clone(),
         req,
     )
@@ -61,7 +61,7 @@ pub async fn create_friend_request(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.users_service_url.clone(),
         req,
     )
@@ -73,7 +73,7 @@ pub async fn update_friend_request(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.users_service_url.clone(),
         req,
     )
@@ -85,7 +85,7 @@ pub async fn remove_friendship(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.users_service_url.clone(),
         req,
     )
@@ -97,7 +97,7 @@ pub async fn ban(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.users_service_url.clone(),
         req,
     )
@@ -109,7 +109,7 @@ pub async fn update_ban(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.users_service_url.clone(),
         req,
     )
@@ -121,7 +121,7 @@ pub async fn remove_ban(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.users_service_url.clone(),
         req,
     )

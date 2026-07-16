@@ -1,7 +1,9 @@
 use std::sync::Arc;
 
+use crate::{clients::connect_redis, middleware::session::session};
+
 use super::{
-    client::{Client, create_client},
+    clients::{ClientHTTP, create_client_http},
     config::ServiceUrl,
     middleware::cors::cors,
     modules::admin::admin_routes,
@@ -14,18 +16,26 @@ use super::{
     modules::search::search_routes,
     modules::users::users_routes,
 };
-use axum::{Router, extract::FromRef};
+use axum::{Router, extract::FromRef, middleware};
+use redis::aio::MultiplexedConnection;
 use tower_http::trace::TraceLayer;
 
 #[derive(Clone)]
 pub struct AppState {
-    pub client: Client,
+    pub client_http: ClientHTTP,
+    pub con_redis: MultiplexedConnection,
     pub service_url: ServiceUrl,
 }
 
-impl FromRef<AppState> for Client {
-    fn from_ref(app_state: &AppState) -> Client {
-        app_state.client.clone()
+impl FromRef<AppState> for ClientHTTP {
+    fn from_ref(app_state: &AppState) -> ClientHTTP {
+        app_state.client_http.clone()
+    }
+}
+
+impl FromRef<AppState> for MultiplexedConnection {
+    fn from_ref(app_state: &AppState) -> MultiplexedConnection {
+        app_state.con_redis.clone()
     }
 }
 
@@ -35,11 +45,13 @@ impl FromRef<AppState> for ServiceUrl {
     }
 }
 
-pub fn app_routes(service_url: ServiceUrl) -> Router {
-    let client = create_client();
+pub async fn app_routes(service_url: ServiceUrl) -> Router {
+    let client_http = create_client_http();
+    let con_redis = connect_redis(&service_url.redis_url).await;
     let cors_layer = cors(&service_url.frontend_url);
     let app_state = Arc::new(AppState {
-        client,
+        client_http,
+        con_redis,
         service_url,
     });
     Router::new()
@@ -53,6 +65,7 @@ pub fn app_routes(service_url: ServiceUrl) -> Router {
         .merge(search_routes())
         .merge(users_routes())
         .layer(cors_layer)
-        .with_state(app_state)
         .layer(TraceLayer::new_for_http())
+        .route_layer(middleware::from_fn_with_state(app_state.clone(), session))
+        .with_state(app_state)
 }

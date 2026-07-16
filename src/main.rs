@@ -1,5 +1,5 @@
 mod app;
-mod client;
+mod clients;
 mod config;
 mod middleware;
 mod modules;
@@ -16,7 +16,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let Config { port, service_url } = Config::from_env();
 
-    let app = app_routes(service_url);
+    let app = app_routes(service_url).await;
 
     run(app, port).await?;
 
