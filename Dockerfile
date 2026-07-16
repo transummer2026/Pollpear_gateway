@@ -28,7 +28,7 @@ CMD ["cargo", "watch", "-x", "run"]
 
 FROM rust:1.96-alpine AS prod-builder
 
-# hadolint global ignore=DL3018
+# hadolint ignore=DL3018
 RUN apk add --no-cache musl-dev
 
 WORKDIR /app
@@ -38,7 +38,7 @@ COPY src ./src
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/app/target \
     cargo build --release --locked \
-    && cp target/release/pollpear-gateway /usr/local/bin/pollpear-gateway
+    && cp target/release/pollpear_gateway /usr/local/bin/pollpear_gateway
 
 FROM alpine:3.21 AS prod
 
