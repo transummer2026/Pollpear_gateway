@@ -10,6 +10,7 @@ use super::{
     modules::auth::auth_routes,
     modules::contact::contact_routes,
     modules::feed::feed_routes,
+    modules::healthcheck::healthcheck_routes,
     modules::me::me_routes,
     modules::polls::polls_routes,
     modules::rooms::rooms_routes,
@@ -59,6 +60,7 @@ pub async fn app_routes(service_url: ServiceUrl) -> Router {
         .merge(auth_routes())
         .merge(contact_routes())
         .merge(feed_routes())
+        .merge(healthcheck_routes())
         .merge(me_routes())
         .merge(polls_routes())
         .merge(rooms_routes())
