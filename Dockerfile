@@ -17,7 +17,10 @@ RUN mkdir src && echo "fn main() {}" > src/main.rs \
 
 FROM builder AS dev
 
-RUN chown -R rust:rust /usr/local/cargo /app
+# hadolint ignore=DL3008
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && chown -R rust:rust /usr/local/cargo /app
 
 USER rust
 
@@ -42,8 +45,12 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
 
 FROM alpine:3.21 AS prod
 
-RUN adduser -D -H gateway
+# hadolint ignore=DL3018
+RUN apk add --no-cache curl \
+    && adduser -D -H gateway
+
 USER gateway
+
 COPY --from=prod-builder /usr/local/bin/pollpear_gateway /usr/local/bin/pollpear_gateway
 
 CMD ["pollpear_gateway"]
