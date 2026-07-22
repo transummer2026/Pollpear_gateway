@@ -1,32 +1,40 @@
-use super::client::Client;
+use super::clients::ClientHTTP;
 use axum::{
     extract::{OriginalUri, Request},
     http::uri::Uri,
     response::{IntoResponse, Response},
 };
 use hyper::StatusCode;
+use tracing::{debug, error};
 
 pub async fn proxy_forward(
-    client: Client,
+    client_http: ClientHTTP,
     service_url: String,
     mut req: Request,
 ) -> Result<Response, StatusCode> {
-    let original = req.extensions().get::<OriginalUri>().map(|u| u.0.clone());
-    let uri_ref = original.as_ref().unwrap_or_else(|| req.uri());
-
-    let path = uri_ref.path();
-    let path_query = uri_ref
+    let method = req.method().clone();
+    let uri_owned = match req.extensions().get::<OriginalUri>() {
+        Some(orig) => orig.0.clone(),
+        None => req.uri().clone(),
+    };
+    let path_query = uri_owned
         .path_and_query()
         .map(|v| v.as_str())
-        .unwrap_or(path);
+        .unwrap_or_else(|| uri_owned.path())
+        .to_owned();
+    let target = format!("{service_url}{path_query}");
 
-    let uri = format!("{service_url}{path_query}");
+    debug!(method = %method, path = %path_query, target = %target, "forwarding");
 
-    *req.uri_mut() = Uri::try_from(uri).map_err(|_| StatusCode::BAD_GATEWAY)?;
+    *req.uri_mut() = Uri::try_from(target).map_err(|_| StatusCode::BAD_GATEWAY)?;
 
-    Ok(client
-        .request(req)
-        .await
-        .map_err(|_| StatusCode::BAD_REQUEST)?
-        .into_response())
+    let response = client_http.request(req).await.map_err(|e| {
+        error!(method = %method, path = %path_query, error = %e, "proxy request failed");
+        StatusCode::BAD_GATEWAY
+    })?;
+
+    let status = response.status();
+    debug!(method = %method, path = %path_query, status = %status, "proxy response");
+
+    Ok(response.into_response())
 }

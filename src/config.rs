@@ -18,6 +18,7 @@ pub struct ServiceUrl {
     pub search_service_url: String,
     pub users_service_url: String,
     pub frontend_url: String,
+    pub redis_url: String,
 }
 
 impl Config {
@@ -59,6 +60,8 @@ impl Config {
                     .expect("USERS_SERVICE_URL or BACKEND_URL is missing"),
                 frontend_url: dotenvy::var("FRONTEND_URL")
                     .unwrap_or_else(|_| "http://localhost:5173".to_string()),
+                redis_url: dotenvy::var("REDIS_URL")
+                    .unwrap_or_else(|_| "redis://redis:6379".to_string()),
             },
         }
     }

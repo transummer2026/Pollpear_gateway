@@ -1,10 +1,9 @@
-use std::sync::Arc;
-
 use axum::{
     extract::{Request, State},
     response::Response,
 };
 use hyper::StatusCode;
+use std::sync::Arc;
 
 use crate::{app::AppState, proxy::proxy_forward};
 
@@ -13,7 +12,7 @@ pub async fn my_profile(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.me_service_url.clone(),
         req,
     )
@@ -24,7 +23,7 @@ pub async fn edit_profile(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.me_service_url.clone(),
         req,
     )
@@ -36,7 +35,7 @@ pub async fn remove(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.me_service_url.clone(),
         req,
     )
@@ -48,7 +47,7 @@ pub async fn upload_avatar(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.me_service_url.clone(),
         req,
     )
@@ -59,7 +58,7 @@ pub async fn my_settings(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.me_service_url.clone(),
         req,
     )
@@ -71,7 +70,7 @@ pub async fn edit_settings(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.me_service_url.clone(),
         req,
     )
@@ -83,7 +82,7 @@ pub async fn change_password(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.me_service_url.clone(),
         req,
     )

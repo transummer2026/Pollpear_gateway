@@ -13,7 +13,7 @@ pub async fn feed(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.feed_service_url.clone(),
         req,
     )

@@ -2,6 +2,7 @@ pub mod admin;
 pub mod auth;
 pub mod contact;
 pub mod feed;
+pub mod healthcheck;
 pub mod me;
 pub mod polls;
 pub mod rooms;

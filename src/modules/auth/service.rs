@@ -13,7 +13,7 @@ pub async fn register(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.auth_service_url.clone(),
         req,
     )
@@ -24,7 +24,7 @@ pub async fn login(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.auth_service_url.clone(),
         req,
     )
@@ -35,7 +35,7 @@ pub async fn logout(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.auth_service_url.clone(),
         req,
     )
@@ -46,7 +46,7 @@ pub async fn password_forgot(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.auth_service_url.clone(),
         req,
     )
@@ -57,7 +57,7 @@ pub async fn password_reset(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.auth_service_url.clone(),
         req,
     )
@@ -68,7 +68,7 @@ pub async fn oauth(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.auth_service_url.clone(),
         req,
     )
@@ -79,7 +79,7 @@ pub async fn callback(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.auth_service_url.clone(),
         req,
     )

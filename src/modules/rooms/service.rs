@@ -13,7 +13,7 @@ pub async fn create(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.rooms_service_url.clone(),
         req,
     )
@@ -24,7 +24,7 @@ pub async fn update(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.rooms_service_url.clone(),
         req,
     )
@@ -36,7 +36,7 @@ pub async fn remove(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.rooms_service_url.clone(),
         req,
     )
@@ -48,7 +48,7 @@ pub async fn add_participant(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.rooms_service_url.clone(),
         req,
     )
@@ -60,7 +60,7 @@ pub async fn remove_participant(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.rooms_service_url.clone(),
         req,
     )
@@ -72,7 +72,7 @@ pub async fn get_messages(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.rooms_service_url.clone(),
         req,
     )
@@ -84,7 +84,7 @@ pub async fn create_message(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.rooms_service_url.clone(),
         req,
     )
@@ -96,7 +96,7 @@ pub async fn remove_message(
     req: Request,
 ) -> Result<Response, StatusCode> {
     proxy_forward(
-        appstate.client.clone(),
+        appstate.client_http.clone(),
         appstate.service_url.rooms_service_url.clone(),
         req,
     )
