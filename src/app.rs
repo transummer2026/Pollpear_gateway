@@ -1,6 +1,9 @@
 use std::sync::Arc;
 
-use crate::{clients::connect_redis, middleware::session::session};
+use crate::{
+    clients::connect_redis,
+    middleware::{session::session, strip::x_user_id::x_user_id},
+};
 
 use super::{
     clients::{ClientHTTP, create_client_http},
@@ -69,5 +72,6 @@ pub async fn app_routes(service_url: ServiceUrl) -> Router {
         .layer(cors_layer)
         .layer(TraceLayer::new_for_http())
         .route_layer(middleware::from_fn_with_state(app_state.clone(), session))
+        .route_layer(middleware::from_fn(x_user_id))
         .with_state(app_state)
 }
