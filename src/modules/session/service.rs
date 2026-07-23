@@ -52,6 +52,21 @@ pub async fn refresh_ttl(con: &mut MultiplexedConnection, session_id: &str, user
     }
 }
 
+pub async fn invalidate_session(con: &mut MultiplexedConnection, session_id: &str, user_id: &str) {
+    let session_key = session_key(session_id);
+    let user_key = user_sessions(user_id);
+
+    let result: RedisResult<()> = con.del(&session_key).await;
+    if let Err(error) = result {
+        warn!(error = %error, "failed to delete old session");
+    }
+
+    let result: RedisResult<i64> = con.hdel(&user_key, session_id).await;
+    if let Err(error) = result {
+        warn!(error = %error, "failed to delete old session from user_session");
+    }
+}
+
 fn session_key(session_id: &str) -> String {
     format!("session:{session_id}")
 }

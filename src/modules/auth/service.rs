@@ -1,12 +1,22 @@
 use std::sync::Arc;
+use tracing::{debug, warn};
 
 use axum::{
     extract::{Request, State},
     response::Response,
 };
-use hyper::StatusCode;
+use axum_extra::extract::CookieJar;
+use hyper::{StatusCode, header::SET_COOKIE};
 
-use crate::{app::AppState, proxy::proxy_forward};
+use crate::{
+    app::AppState,
+    middleware::strip::sid::{extract_sid, remove_sid},
+    modules::{
+        redis::service::RedisLookup,
+        session::service::{get_session_user, invalidate_session},
+    },
+    proxy::proxy_forward,
+};
 
 pub async fn register(
     State(appstate): State<Arc<AppState>>,
@@ -21,14 +31,52 @@ pub async fn register(
 }
 pub async fn login(
     State(appstate): State<Arc<AppState>>,
-    req: Request,
+    jar: CookieJar,
+    mut req: Request,
 ) -> Result<Response, StatusCode> {
-    proxy_forward(
+    let req_session_id: Option<String> = jar.get("sid").map(|cookie| cookie.value().to_owned());
+    remove_sid(&mut req);
+
+    let mut con_redis = appstate.con_redis.clone();
+
+    let user_id = match &req_session_id {
+        Some(req_session_id) => match get_session_user(&mut con_redis, req_session_id).await {
+            RedisLookup::Found(user_id) => Some(user_id),
+            RedisLookup::NotFound => {
+                debug!("session not found in redis, invalidating cookie");
+                None
+            }
+            RedisLookup::Infra(error) => {
+                warn!(error = %error, "redis unavailable, passing through without touching cookie");
+                None
+            }
+        },
+        None => {
+            debug!("no session cookie on login request");
+            None
+        }
+    };
+
+    let response = proxy_forward(
         appstate.client_http.clone(),
         appstate.service_url.auth_service_url.clone(),
         req,
     )
-    .await
+    .await?;
+
+    let res_session_id = response
+        .headers()
+        .get_all(SET_COOKIE)
+        .iter()
+        .find_map(|value| value.to_str().ok().and_then(extract_sid));
+
+    if let (Some(req_session_id), Some(user_id), Some(_)) =
+        (&req_session_id, &user_id, &res_session_id)
+    {
+        invalidate_session(&mut con_redis, req_session_id, user_id).await;
+    }
+
+    Ok(response)
 }
 pub async fn logout(
     State(appstate): State<Arc<AppState>>,
