@@ -1,6 +1,12 @@
 use std::sync::Arc;
 
-use crate::{clients::connect_redis, middleware::session::session};
+use crate::{
+    clients::connect_redis,
+    middleware::{
+        session::session,
+        strip::{sid::sid, x_user_id::x_user_id},
+    },
+};
 
 use super::{
     clients::{ClientHTTP, create_client_http},
@@ -19,6 +25,7 @@ use super::{
 };
 use axum::{Router, extract::FromRef, middleware};
 use redis::aio::MultiplexedConnection;
+use tower::ServiceBuilder;
 use tower_http::trace::TraceLayer;
 
 #[derive(Clone)]
@@ -56,18 +63,33 @@ pub async fn app_routes(service_url: ServiceUrl) -> Router {
         service_url,
     });
     Router::new()
-        .merge(admin_routes())
+        .merge(public_routes())
+        .merge(protected_routes(&app_state))
+        .route_layer(middleware::from_fn(x_user_id))
+        .layer(
+            ServiceBuilder::new()
+                .layer(TraceLayer::new_for_http())
+                .layer(cors_layer),
+        )
+        .with_state(app_state)
+}
+
+fn public_routes() -> Router<Arc<AppState>> {
+    Router::new()
         .merge(auth_routes())
         .merge(contact_routes())
-        .merge(feed_routes())
         .merge(healthcheck_routes())
+}
+
+fn protected_routes(app_state: &Arc<AppState>) -> Router<Arc<AppState>> {
+    Router::new()
+        .merge(admin_routes())
+        .merge(feed_routes())
         .merge(me_routes())
         .merge(polls_routes())
         .merge(rooms_routes())
         .merge(search_routes())
         .merge(users_routes())
-        .layer(cors_layer)
-        .layer(TraceLayer::new_for_http())
+        .route_layer(middleware::from_fn(sid))
         .route_layer(middleware::from_fn_with_state(app_state.clone(), session))
-        .with_state(app_state)
 }

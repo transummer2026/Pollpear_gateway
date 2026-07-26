@@ -5,6 +5,8 @@ pub mod feed;
 pub mod healthcheck;
 pub mod me;
 pub mod polls;
+pub mod redis;
 pub mod rooms;
+pub mod session;
 pub mod search;
 pub mod users;
