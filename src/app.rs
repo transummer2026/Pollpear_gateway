@@ -21,6 +21,7 @@ use super::{
     modules::polls::polls_routes,
     modules::rooms::rooms_routes,
     modules::search::search_routes,
+    modules::uploads::uploads_routes,
     modules::users::users_routes,
 };
 use axum::{Router, extract::FromRef, middleware};
@@ -79,6 +80,7 @@ fn public_routes() -> Router<Arc<AppState>> {
         .merge(auth_routes())
         .merge(contact_routes())
         .merge(healthcheck_routes())
+        .merge(uploads_routes())
 }
 
 fn protected_routes(app_state: &Arc<AppState>) -> Router<Arc<AppState>> {

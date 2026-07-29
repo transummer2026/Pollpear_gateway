@@ -19,6 +19,8 @@ pub struct ServiceUrl {
     pub users_service_url: String,
     pub frontend_url: String,
     pub redis_url: String,
+    pub garage_url: String,
+    pub garage_uploads_host: String,
 }
 
 impl Config {
@@ -62,6 +64,10 @@ impl Config {
                     .unwrap_or_else(|_| "http://localhost:5173".to_string()),
                 redis_url: dotenvy::var("REDIS_URL")
                     .unwrap_or_else(|_| "redis://redis:6379".to_string()),
+                garage_url: dotenvy::var("GARAGE_S3_URL")
+                    .unwrap_or_else(|_| "http://garage:3902".to_string()),
+                garage_uploads_host: dotenvy::var("GARAGE_S3_UPLOADS_HOST")
+                    .unwrap_or_else(|_| "pollpear-uploads.web.garage.localhost".to_string()),
             },
         }
     }
