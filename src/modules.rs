@@ -7,6 +7,7 @@ pub mod me;
 pub mod polls;
 pub mod redis;
 pub mod rooms;
-pub mod session;
 pub mod search;
+pub mod session;
+pub mod uploads;
 pub mod users;
