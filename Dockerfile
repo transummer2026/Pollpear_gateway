@@ -2,18 +2,27 @@
 # escape=\
 # check=error=true
 
-FROM rust:1.96-slim AS builder
+FROM rust:1.96-slim AS chef
+
+RUN cargo install cargo-chef --locked
 
 WORKDIR /app
+
+FROM chef AS planner
+
+COPY Cargo.toml Cargo.lock ./
+COPY src ./src
+
+RUN cargo chef prepare --recipe-path recipe.json
+
+FROM chef AS builder
 
 RUN cargo install cargo-watch --locked \
     && useradd -m rust
 
-COPY Cargo.toml Cargo.lock ./
+COPY --from=planner /app/recipe.json recipe.json
 
-RUN mkdir src && echo "fn main() {}" > src/main.rs \
-    && cargo build --release \
-    && rm -rf src
+RUN cargo chef cook --recipe-path recipe.json
 
 FROM builder AS dev
 
@@ -29,12 +38,22 @@ COPY --chown=rust:rust . .
 ENV RUST_LOG=debug
 CMD ["cargo", "watch", "-x", "run"]
 
-FROM rust:1.96-alpine AS prod-builder
+FROM rust:1.96-alpine AS prod-chef
 
 # hadolint ignore=DL3018
-RUN apk add --no-cache musl-dev
+RUN apk add --no-cache musl-dev \
+    && cargo install cargo-chef --locked
 
 WORKDIR /app
+
+FROM prod-chef AS prod-builder
+
+COPY --from=planner /app/recipe.json recipe.json
+
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/app/target \
+    cargo chef cook --release --recipe-path recipe.json
+
 COPY Cargo.toml Cargo.lock ./
 COPY src ./src
 
