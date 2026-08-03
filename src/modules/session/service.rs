@@ -3,8 +3,6 @@ use tracing::{debug, warn};
 
 use crate::modules::redis::service::{RedisLookup, is_infra_error};
 
-const TTL: i64 = 60 * 30;
-
 pub async fn get_session_user(
     con: &mut MultiplexedConnection,
     session_id: &str,
@@ -19,21 +17,26 @@ pub async fn get_session_user(
     }
 }
 
-pub async fn refresh_ttl(con: &mut MultiplexedConnection, session_id: &str, user_id: &str) {
+pub async fn refresh_ttl(
+    con: &mut MultiplexedConnection,
+    session_id: &str,
+    user_id: &str,
+    ttl: i64,
+) {
     let key = session_key(session_id);
 
     match con.ttl(&key).await {
         Ok(-2) => warn!("the key: {key} does not exist"),
         Ok(-1) => warn!("the key: {key} exists but has no associated expire"),
-        Ok(ttl) if ttl <= TTL / 2 => {
-            let result: RedisResult<()> = con.expire(&key, TTL).await;
+        Ok(current_ttl) if current_ttl <= ttl / 2 => {
+            let result: RedisResult<()> = con.expire(&key, ttl).await;
             if let Err(error) = result {
                 warn!(error = %error, "failed to refresh session ttl");
             }
 
             let key = user_sessions(user_id);
             let result: RedisResult<Vec<i32>> = con
-                .hexpire(key, TTL, redis::ExpireOption::NONE, &[session_id])
+                .hexpire(key, ttl, redis::ExpireOption::NONE, &[session_id])
                 .await;
             match result {
                 Ok(codes) => match codes.as_slice() {

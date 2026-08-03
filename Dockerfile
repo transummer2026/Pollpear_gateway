@@ -36,6 +36,9 @@ USER rust
 COPY --chown=rust:rust . .
 
 ENV RUST_LOG=debug
+
+ENTRYPOINT ["/bin/sh", "/usr/local/bin/vault-approle-entrypoint.sh"]
+
 CMD ["cargo", "watch", "-x", "run"]
 
 FROM rust:1.96-alpine AS prod-chef
@@ -71,5 +74,7 @@ RUN apk add --no-cache curl \
 USER gateway
 
 COPY --from=prod-builder /usr/local/bin/pollpear_gateway /usr/local/bin/pollpear_gateway
+
+ENTRYPOINT ["/bin/sh", "/usr/local/bin/vault-approle-entrypoint.sh"]
 
 CMD ["pollpear_gateway"]

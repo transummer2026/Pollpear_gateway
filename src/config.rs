@@ -2,8 +2,9 @@ use std::path::Path;
 
 #[derive(Clone)]
 pub struct Config {
-    pub port: String,
-    pub service_url: ServiceUrl,
+    pub vault_url: String,
+    pub vault_role: String,
+    pub vault_secret: String,
 }
 
 #[derive(Clone)]
@@ -31,44 +32,13 @@ impl Config {
     pub fn from_env() -> Self {
         Self::init_dotenvy();
         Self {
-            port: dotenvy::var("GATEWAY_PORT").unwrap_or_else(|_| "8080".to_string()),
-            service_url: ServiceUrl {
-                admin_service_url: dotenvy::var("ADMIN_SERVICE_URL")
-                    .or_else(|_| dotenvy::var("BACKEND_URL"))
-                    .expect("ADMIN_SERVICE_URL or BACKEND_URL is missing"),
-                auth_service_url: dotenvy::var("AUTH_SERVICE_URL")
-                    .or_else(|_| dotenvy::var("BACKEND_URL"))
-                    .expect("AUTH_SERVICE_URL or BACKEND_URL is missing"),
-                contact_service_url: dotenvy::var("CONTACT_SERVICE_URL")
-                    .or_else(|_| dotenvy::var("BACKEND_URL"))
-                    .expect("CONTACT_SERVICE_URL or BACKEND_URL is missing"),
-                feed_service_url: dotenvy::var("FEED_SERVICE_URL")
-                    .or_else(|_| dotenvy::var("BACKEND_URL"))
-                    .expect("FEED_SERVICE_URL or BACKEND_URL is missing"),
-                me_service_url: dotenvy::var("ME_SERVICE_URL")
-                    .or_else(|_| dotenvy::var("BACKEND_URL"))
-                    .expect("ME_SERVICE_URL or BACKEND_URL is missing"),
-                polls_service_url: dotenvy::var("POLLS_SERVICE_URL")
-                    .or_else(|_| dotenvy::var("BACKEND_URL"))
-                    .expect("POLLS_SERVICE_URL or BACKEND_URL is missing"),
-                rooms_service_url: dotenvy::var("ROOMS_SERVICE_URL")
-                    .or_else(|_| dotenvy::var("BACKEND_URL"))
-                    .expect("ROOMS_SERVICE_URL or BACKEND_URL is missing"),
-                search_service_url: dotenvy::var("SEARCH_SERVICE_URL")
-                    .or_else(|_| dotenvy::var("BACKEND_URL"))
-                    .expect("SEARCH_SERVICE_URL or BACKEND_URL is missing"),
-                users_service_url: dotenvy::var("USERS_SERVICE_URL")
-                    .or_else(|_| dotenvy::var("BACKEND_URL"))
-                    .expect("USERS_SERVICE_URL or BACKEND_URL is missing"),
-                frontend_url: dotenvy::var("FRONTEND_URL")
-                    .unwrap_or_else(|_| "http://localhost:5173".to_string()),
-                redis_url: dotenvy::var("REDIS_URL")
-                    .unwrap_or_else(|_| "redis://redis:6379".to_string()),
-                garage_url: dotenvy::var("GARAGE_S3_URL")
-                    .unwrap_or_else(|_| "http://garage:3902".to_string()),
-                garage_uploads_host: dotenvy::var("GARAGE_S3_UPLOADS_HOST")
-                    .unwrap_or_else(|_| "pollpear-uploads.web.garage.localhost".to_string()),
-            },
+            vault_url: dotenvy::var("VAULT_ADDR")
+                .unwrap_or_else(|_| "VAULT_ADDR is missing".to_string()),
+            vault_role: dotenvy::var("ROLE_ID")
+                .unwrap_or_else(|_| "ROLE_ID is missing".to_string()),
+            vault_secret: dotenvy::var("SECRET_ID")
+                .unwrap_or_else(|_| "SECRET_ID is missing".to_string())
+                .to_string(),
         }
     }
 }

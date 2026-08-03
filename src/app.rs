@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{error::Error, sync::Arc};
 
 use crate::{
     clients::connect_redis,
@@ -34,6 +34,7 @@ pub struct AppState {
     pub client_http: ClientHTTP,
     pub con_redis: MultiplexedConnection,
     pub service_url: ServiceUrl,
+    pub ttl: i64,
 }
 
 impl FromRef<AppState> for ClientHTTP {
@@ -54,16 +55,17 @@ impl FromRef<AppState> for ServiceUrl {
     }
 }
 
-pub async fn app_routes(service_url: ServiceUrl) -> Router {
+pub async fn app_routes(service_url: ServiceUrl, ttl: i64) -> Result<Router, Box<dyn Error>> {
     let client_http = create_client_http();
-    let con_redis = connect_redis(&service_url.redis_url).await;
+    let con_redis = connect_redis(&service_url.redis_url).await?;
     let cors_layer = cors(&service_url.frontend_url);
     let app_state = Arc::new(AppState {
         client_http,
         con_redis,
         service_url,
+        ttl,
     });
-    Router::new()
+    Ok(Router::new()
         .merge(public_routes())
         .merge(protected_routes(&app_state))
         .route_layer(middleware::from_fn(x_user_id))
@@ -72,7 +74,7 @@ pub async fn app_routes(service_url: ServiceUrl) -> Router {
                 .layer(TraceLayer::new_for_http())
                 .layer(cors_layer),
         )
-        .with_state(app_state)
+        .with_state(app_state))
 }
 
 fn public_routes() -> Router<Arc<AppState>> {
