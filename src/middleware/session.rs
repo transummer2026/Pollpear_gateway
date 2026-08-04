@@ -32,7 +32,7 @@ pub async fn session(
                 request.headers_mut().insert("x-user-id", header_value);
                 debug!(user_id = %user_id, "session resolved");
             }
-            refresh_ttl(&mut con_redis, &session_id, &user_id).await;
+            refresh_ttl(&mut con_redis, &session_id, &user_id, appstate.ttl).await;
             next.run(request).await
         }
         RedisLookup::NotFound => {
