@@ -70,6 +70,35 @@ pub async fn invalidate_session(con: &mut MultiplexedConnection, session_id: &st
     }
 }
 
+pub async fn invalidate_all_sessions(con: &mut MultiplexedConnection, user_id: &str) {
+    let user_key = user_sessions(user_id);
+
+    let session_ids: RedisResult<Vec<String>> = con.hkeys(&user_key).await;
+    let session_ids = match session_ids {
+        Ok(ids) => ids,
+        Err(error) => {
+            warn!(error = %error, "failed to list sessions for user");
+            return;
+        }
+    };
+
+    if session_ids.is_empty() {
+        return;
+    }
+
+    let session_keys: Vec<String> = session_ids.iter().map(|id| session_key(id)).collect();
+
+    let result: RedisResult<()> = con.del(&session_keys).await;
+    if let Err(error) = result {
+        warn!(error = %error, "failed to delete sessions for user");
+    }
+
+    let result: RedisResult<()> = con.del(&user_key).await;
+    if let Err(error) = result {
+        warn!(error = %error, "failed to delete user_sessions for user");
+    }
+}
+
 fn session_key(session_id: &str) -> String {
     format!("session:{session_id}")
 }

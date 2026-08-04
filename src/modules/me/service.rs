@@ -5,7 +5,7 @@ use axum::{
 use hyper::StatusCode;
 use std::sync::Arc;
 
-use crate::{app::AppState, proxy::proxy_forward};
+use crate::{app::AppState, modules::session::service::invalidate_all_sessions, proxy::proxy_forward};
 
 pub async fn my_profile(
     State(appstate): State<Arc<AppState>>,
@@ -34,12 +34,27 @@ pub async fn remove(
     State(appstate): State<Arc<AppState>>,
     req: Request,
 ) -> Result<Response, StatusCode> {
-    proxy_forward(
+    let user_id = req
+        .headers()
+        .get("x-user-id")
+        .and_then(|value| value.to_str().ok())
+        .map(str::to_owned);
+
+    let response = proxy_forward(
         appstate.client_http.clone(),
         appstate.service_url.me_service_url.clone(),
         req,
     )
-    .await
+    .await?;
+
+    if let Some(user_id) = user_id
+        && response.status().is_success()
+    {
+        let mut con_redis = appstate.con_redis.clone();
+        invalidate_all_sessions(&mut con_redis, &user_id).await;
+    }
+
+    Ok(response)
 }
 
 pub async fn upload_avatar(
