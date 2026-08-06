@@ -22,6 +22,8 @@ fn auth() -> Router<Arc<AppState>> {
 
 fn oauth() -> Router<Arc<AppState>> {
     Router::new()
+        .route("/pending", get(service::pending))
+        .route("/complete", post(service::complete))
         .route("/{provider}", get(service::oauth))
         .route("/{provider}/callback", get(service::callback))
 }

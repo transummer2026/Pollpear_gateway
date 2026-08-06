@@ -174,3 +174,21 @@ pub async fn callback(
     )
     .await
 }
+pub async fn pending(
+    State(appstate): State<Arc<AppState>>,
+    req: Request,
+) -> Result<Response, StatusCode> {
+    proxy_forward(
+        appstate.client_http.clone(),
+        appstate.service_url.auth_service_url.clone(),
+        req,
+    )
+    .await
+}
+pub async fn complete(
+    State(appstate): State<Arc<AppState>>,
+    jar: CookieJar,
+    req: Request,
+) -> Result<Response, StatusCode> {
+    login(State(appstate), jar, req).await
+}
