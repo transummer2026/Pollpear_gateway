@@ -12,3 +12,4 @@ pub mod session;
 pub mod uploads;
 pub mod users;
 pub mod vault;
+pub mod ws;

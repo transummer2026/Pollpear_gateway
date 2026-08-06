@@ -23,6 +23,7 @@ use super::{
     modules::search::search_routes,
     modules::uploads::uploads_routes,
     modules::users::users_routes,
+    modules::ws::ws_routes,
 };
 use axum::{Router, extract::FromRef, middleware};
 use redis::aio::MultiplexedConnection;
@@ -94,6 +95,7 @@ fn protected_routes(app_state: &Arc<AppState>) -> Router<Arc<AppState>> {
         .merge(rooms_routes())
         .merge(search_routes())
         .merge(users_routes())
+        .merge(ws_routes())
         .route_layer(middleware::from_fn(sid))
         .route_layer(middleware::from_fn_with_state(app_state.clone(), session))
 }
