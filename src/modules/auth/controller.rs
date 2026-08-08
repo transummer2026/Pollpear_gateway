@@ -18,6 +18,8 @@ fn auth() -> Router<Arc<AppState>> {
         .route("/logout", post(service::logout))
         .route("/password-forgot", post(service::password_forgot))
         .route("/password-reset", post(service::password_reset))
+        .route("/verify-email", post(service::verify_email))
+        .route("/verify-email/resend", post(service::resend))
 }
 
 fn oauth() -> Router<Arc<AppState>> {
