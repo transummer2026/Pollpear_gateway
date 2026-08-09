@@ -33,6 +33,7 @@ pub async fn proxy_forward(
         .map(|v| v.as_str())
         .unwrap_or_else(|| uri_owned.path())
         .to_owned();
+    let path_query = path_query.strip_prefix("/api").unwrap_or(&path_query);
     let target = format!("{service_url}{path_query}");
 
     debug!(method = %method, path = %path_query, target = %target, "forwarding");
