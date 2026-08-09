@@ -67,8 +67,13 @@ pub async fn app_routes(service_url: ServiceUrl, ttl: i64) -> Result<Router, Box
         ttl,
     });
     Ok(Router::new()
-        .merge(public_routes())
-        .merge(protected_routes(&app_state))
+        .nest(
+            "/api",
+            Router::new()
+                .merge(public_routes())
+                .merge(protected_routes(&app_state)),
+        )
+        .merge(healthcheck_routes())
         .route_layer(middleware::from_fn(x_user_id))
         .layer(
             ServiceBuilder::new()
@@ -82,7 +87,6 @@ fn public_routes() -> Router<Arc<AppState>> {
     Router::new()
         .merge(auth_routes())
         .merge(contact_routes())
-        .merge(healthcheck_routes())
         .merge(uploads_routes())
 }
 
