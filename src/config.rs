@@ -18,6 +18,7 @@ pub struct ServiceUrl {
     pub rooms_service_url: String,
     pub search_service_url: String,
     pub users_service_url: String,
+    pub ws_url: String,
     pub frontend_url: String,
     pub redis_url: String,
     pub garage_url: String,

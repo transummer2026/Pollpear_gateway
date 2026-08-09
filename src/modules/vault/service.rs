@@ -35,6 +35,7 @@ pub async fn bootstrap(
         rooms_service_url: app_secret.backend_url.clone(),
         search_service_url: app_secret.backend_url.clone(),
         users_service_url: app_secret.backend_url.clone(),
+        ws_url: to_ws_url(&app_secret.backend_url.clone())?,
         frontend_url: app_secret.frontend_url,
         redis_url: format!(
             "redis://:{}@{}:{}",
@@ -45,6 +46,13 @@ pub async fn bootstrap(
     };
 
     Ok((service_url, ttl))
+}
+
+fn to_ws_url(http_url: &str) -> Result<String, Box<dyn Error>> {
+    let Some(url) = http_url.strip_prefix("http") else {
+        return Err(format!("invalid backend_url scheme: {http_url}").into());
+    };
+    Ok(format!("ws{url}"))
 }
 
 pub async fn approle_login(
