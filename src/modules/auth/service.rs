@@ -152,6 +152,30 @@ pub async fn password_reset(
     )
     .await
 }
+
+pub async fn verify_email(
+    State(appstate): State<Arc<AppState>>,
+    req: Request,
+) -> Result<Response, StatusCode> {
+    proxy_forward(
+        appstate.client_http.clone(),
+        appstate.service_url.auth_service_url.clone(),
+        req,
+    )
+    .await
+}
+
+pub async fn resend(
+    State(appstate): State<Arc<AppState>>,
+    req: Request,
+) -> Result<Response, StatusCode> {
+    proxy_forward(
+        appstate.client_http.clone(),
+        appstate.service_url.auth_service_url.clone(),
+        req,
+    )
+    .await
+}
 pub async fn oauth(
     State(appstate): State<Arc<AppState>>,
     req: Request,
