@@ -14,7 +14,7 @@ pub async fn search(
 ) -> Result<Response, StatusCode> {
     proxy_forward(
         appstate.client_http.clone(),
-        appstate.service_url.contact_service_url.clone(),
+        appstate.service_url.search_service_url.clone(),
         req,
     )
     .await
