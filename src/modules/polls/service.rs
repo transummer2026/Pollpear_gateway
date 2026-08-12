@@ -20,6 +20,18 @@ pub async fn create(
     .await
 }
 
+pub async fn read(
+    State(appstate): State<Arc<AppState>>,
+    req: Request,
+) -> Result<Response, StatusCode> {
+    proxy_forward(
+        appstate.client_http.clone(),
+        appstate.service_url.polls_service_url.clone(),
+        req,
+    )
+    .await
+}
+
 pub async fn update(
     State(appstate): State<Arc<AppState>>,
     req: Request,
