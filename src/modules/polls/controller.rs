@@ -5,7 +5,7 @@ use crate::app::AppState;
 use super::service;
 use axum::{
     Router,
-    routing::{delete, patch, post},
+    routing::{delete, patch, post, get},
 };
 
 pub fn polls_routes() -> Router<Arc<AppState>> {
@@ -15,6 +15,7 @@ pub fn polls_routes() -> Router<Arc<AppState>> {
 fn polls() -> Router<Arc<AppState>> {
     Router::new()
         .route("/new", post(service::create))
+        .route("/{id}", get(service::read))
         .route("/{id}", patch(service::update))
         .route("/{id}", delete(service::remove))
         .route("/{id}/report", post(service::report))
