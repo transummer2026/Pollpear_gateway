@@ -36,7 +36,7 @@ fn settings() -> Router<Arc<AppState>> {
 fn security() -> Router<Arc<AppState>> {
     Router::new()
         .route("/", put(service::change_password))
-        .route("/apikey", post(service::read_apikey))
+        .route("/apikey", get(service::read_apikey))
         .route("/apikey", post(service::create_apikey))
         .route("/apikey", patch(service::rename_apikey))
         .route("/apikey", delete(service::revoke_apikey))
