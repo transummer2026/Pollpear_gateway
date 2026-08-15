@@ -13,6 +13,7 @@ pub fn me_routes() -> Router<Arc<AppState>> {
         .nest("/me", me())
         .nest("/me", avatar())
         .nest("/me/settings", settings())
+        .nest("/me/settings/security", security())
 }
 
 fn me() -> Router<Arc<AppState>> {
@@ -30,5 +31,13 @@ fn settings() -> Router<Arc<AppState>> {
     Router::new()
         .route("/", get(service::my_settings))
         .route("/", patch(service::edit_settings))
-        .route("/security", put(service::change_password))
+}
+
+fn security() -> Router<Arc<AppState>> {
+    Router::new()
+        .route("/", put(service::change_password))
+        .route("/apikey", get(service::read_apikey))
+        .route("/apikey", post(service::create_apikey))
+        .route("/apikey", patch(service::rename_apikey))
+        .route("/apikey", delete(service::revoke_apikey))
 }

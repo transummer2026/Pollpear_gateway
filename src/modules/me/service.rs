@@ -5,7 +5,9 @@ use axum::{
 use hyper::StatusCode;
 use std::sync::Arc;
 
-use crate::{app::AppState, modules::session::service::invalidate_all_sessions, proxy::proxy_forward};
+use crate::{
+    app::AppState, modules::session::service::invalidate_all_sessions, proxy::proxy_forward,
+};
 
 pub async fn my_profile(
     State(appstate): State<Arc<AppState>>,
@@ -93,6 +95,53 @@ pub async fn edit_settings(
 }
 
 pub async fn change_password(
+    State(appstate): State<Arc<AppState>>,
+    req: Request,
+) -> Result<Response, StatusCode> {
+    proxy_forward(
+        appstate.client_http.clone(),
+        appstate.service_url.me_service_url.clone(),
+        req,
+    )
+    .await
+}
+
+pub async fn create_apikey(
+    State(appstate): State<Arc<AppState>>,
+    req: Request,
+) -> Result<Response, StatusCode> {
+    proxy_forward(
+        appstate.client_http.clone(),
+        appstate.service_url.me_service_url.clone(),
+        req,
+    )
+    .await
+}
+
+pub async fn read_apikey(
+    State(appstate): State<Arc<AppState>>,
+    req: Request,
+) -> Result<Response, StatusCode> {
+    proxy_forward(
+        appstate.client_http.clone(),
+        appstate.service_url.me_service_url.clone(),
+        req,
+    )
+    .await
+}
+pub async fn rename_apikey(
+    State(appstate): State<Arc<AppState>>,
+    req: Request,
+) -> Result<Response, StatusCode> {
+    proxy_forward(
+        appstate.client_http.clone(),
+        appstate.service_url.me_service_url.clone(),
+        req,
+    )
+    .await
+}
+
+pub async fn revoke_apikey(
     State(appstate): State<Arc<AppState>>,
     req: Request,
 ) -> Result<Response, StatusCode> {
