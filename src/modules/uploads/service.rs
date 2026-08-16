@@ -27,7 +27,8 @@ pub async fn upload(
         .map(|v| v.as_str())
         .unwrap_or_else(|| uri_owned.path())
         .to_owned();
-    let stripped = path_query.strip_prefix("/uploads").unwrap_or(&path_query);
+    let stripped = path_query.strip_prefix("/api").unwrap_or(&path_query);
+    let stripped = stripped.strip_prefix("/uploads").unwrap_or(stripped);
     let target = format!("{garage_url}{stripped}");
 
     debug!(method = %method, path = %path_query, target = %target, "forwarding to garage");
