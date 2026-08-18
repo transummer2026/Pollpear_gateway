@@ -12,6 +12,7 @@ pub fn api_routes(app_state: &Arc<AppState>) -> Router<Arc<AppState>> {
 
 fn v1(app_state: &Arc<AppState>) -> Router<Arc<AppState>> {
     Router::new()
+        .route("/", any(service::proxy))
         .route("/{*path}", any(service::proxy))
         .route_layer(middleware::from_fn_with_state(app_state.clone(), apikey))
 }
