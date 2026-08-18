@@ -32,6 +32,7 @@ pub async fn bootstrap(
 
             let service_url = ServiceUrl {
                 admin_service_url: app_secret.backend_url.clone(),
+                api_service_url: app_secret.backend_url.clone(),
                 auth_service_url: app_secret.backend_url.clone(),
                 contact_service_url: app_secret.backend_url.clone(),
                 feed_service_url: app_secret.backend_url.clone(),

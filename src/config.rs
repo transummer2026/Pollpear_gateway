@@ -10,6 +10,7 @@ pub struct Config {
 #[derive(Clone)]
 pub struct ServiceUrl {
     pub admin_service_url: String,
+    pub api_service_url: String,
     pub auth_service_url: String,
     pub contact_service_url: String,
     pub feed_service_url: String,

@@ -1,4 +1,6 @@
 pub mod admin;
+pub mod api;
+pub mod apikey;
 pub mod auth;
 pub mod contact;
 pub mod feed;

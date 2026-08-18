@@ -13,6 +13,7 @@ use super::{
     config::ServiceUrl,
     middleware::cors::cors,
     modules::admin::admin_routes,
+    modules::api::api_routes,
     modules::auth::auth_routes,
     modules::contact::contact_routes,
     modules::feed::feed_routes,
@@ -71,7 +72,8 @@ pub async fn app_routes(service_url: ServiceUrl, ttl: i64) -> Result<Router, Box
             "/api",
             Router::new()
                 .merge(public_routes())
-                .merge(protected_routes(&app_state)),
+                .merge(protected_routes(&app_state))
+                .merge(api_routes(&app_state)),
         )
         .merge(healthcheck_routes())
         .route_layer(middleware::from_fn(x_user_id))
