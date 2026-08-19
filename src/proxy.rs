@@ -18,16 +18,20 @@ use tracing::{debug, error};
 
 type BackendSocket = WebSocketStream<MaybeTlsStream<TcpStream>>;
 
+pub fn original_uri(req: &Request) -> Uri {
+    match req.extensions().get::<OriginalUri>() {
+        Some(orig) => orig.0.clone(),
+        None => req.uri().clone(),
+    }
+}
+
 pub async fn proxy_forward(
     client_http: ClientHTTP,
     service_url: String,
     mut req: Request,
 ) -> Result<Response, StatusCode> {
     let method = req.method().clone();
-    let uri_owned = match req.extensions().get::<OriginalUri>() {
-        Some(orig) => orig.0.clone(),
-        None => req.uri().clone(),
-    };
+    let uri_owned = original_uri(&req);
     let path_query = uri_owned
         .path_and_query()
         .map(|v| v.as_str())
