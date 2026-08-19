@@ -13,7 +13,10 @@ use tracing::{debug, info, warn};
 
 use hyper::StatusCode;
 
-use crate::{app::AppState, proxy::proxy_downstream, proxy::proxy_upstream};
+use crate::{
+    app::AppState,
+    proxy::{original_uri, proxy_downstream, proxy_upstream},
+};
 
 pub async fn handshake(
     State(appstate): State<Arc<AppState>>,
@@ -32,10 +35,12 @@ pub async fn handshake(
 
     debug!(user_id = %user_id, "ws handshake accepted");
 
+    let query = original_uri(&req).query().map(str::to_owned);
+
     let ws_url = appstate.service_url.ws_url.clone();
 
     Ok(ws.on_upgrade(move |socket| async move {
-        if let Err(error) = handle_socket(socket, ws_url, user_id.clone()).await {
+        if let Err(error) = handle_socket(socket, ws_url, query, user_id.clone()).await {
             warn!(user_id = %user_id, error = %error, "ws session failed");
         }
     }))
@@ -44,11 +49,17 @@ pub async fn handshake(
 pub async fn handle_socket(
     socket: WebSocket,
     ws_url: String,
+    query: Option<String>,
     user_id: String,
 ) -> Result<(), Box<dyn Error>> {
     debug!(user_id = %user_id, ws_url = %ws_url, "connecting to backend websocket");
 
-    let mut request = ws_url.into_client_request()?;
+    let target = match query {
+        Some(query) => format!("{ws_url}?{query}"),
+        None => ws_url,
+    };
+
+    let mut request = target.into_client_request()?;
     if let Ok(header_value) = HeaderValue::from_str(&user_id) {
         request.headers_mut().insert("x-user-id", header_value);
     };

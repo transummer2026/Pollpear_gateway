@@ -25,3 +25,8 @@ pub struct S3 {
     pub url: String,
     pub uploads_host: String,
 }
+
+#[derive(Deserialize)]
+pub struct Ws {
+    pub path: String,
+}

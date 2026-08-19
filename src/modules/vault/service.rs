@@ -8,7 +8,7 @@ use vaultrs::{
 
 use crate::{clients::create_client_vault, config::ServiceUrl};
 
-use super::{App, Redis, S3, Session};
+use super::{App, Redis, S3, Session, Ws};
 
 const MAX_ATTEMPTS: u32 = 3;
 
@@ -26,6 +26,7 @@ pub async fn bootstrap(
             let redis_secret = read_redis(&client).await?;
             let session_secret = read_session(&client).await?;
             let s3_secret = read_s3(&client).await?;
+            let ws_secret = read_ws(&client).await?;
 
             let ttl: i64 = session_secret.ttl.parse()?;
 
@@ -39,7 +40,11 @@ pub async fn bootstrap(
                 rooms_service_url: app_secret.backend_url.clone(),
                 search_service_url: app_secret.backend_url.clone(),
                 users_service_url: app_secret.backend_url.clone(),
-                ws_url: to_ws_url(&app_secret.backend_url.clone())?,
+                ws_url: format!(
+                    "{}{}/",
+                    to_ws_url(&app_secret.backend_url.clone())?,
+                    ws_secret.path.trim_end_matches('/')
+                ),
                 frontend_url: app_secret.frontend_url,
                 redis_url: format!(
                     "redis://:{}@{}:{}",
@@ -106,6 +111,12 @@ pub async fn read_session(client: &VaultClient) -> Result<Session, Box<dyn Error
 
 pub async fn read_s3(client: &VaultClient) -> Result<S3, Box<dyn Error>> {
     let secret = kv2::read(client, "secret", "pollpear/s3").await?;
+
+    Ok(secret)
+}
+
+pub async fn read_ws(client: &VaultClient) -> Result<Ws, Box<dyn Error>> {
+    let secret = kv2::read(client, "secret", "pollpear/ws").await?;
 
     Ok(secret)
 }
