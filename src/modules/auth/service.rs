@@ -6,12 +6,12 @@ use axum::{
     http::HeaderValue,
     response::{IntoResponse, Response},
 };
-use axum_extra::extract::{CookieJar, cookie::Cookie};
+use axum_extra::extract::CookieJar;
 use hyper::{StatusCode, header::SET_COOKIE};
 
 use crate::{
     app::AppState,
-    middleware::strip::sid::{extract_sid, remove_sid},
+    middleware::strip::sid::{clear_sid, extract_sid, remove_sid},
     modules::{
         redis::service::RedisLookup,
         session::service::{get_session_user, invalidate_session},
@@ -78,9 +78,6 @@ pub async fn login(
     }
 
     Ok(response)
-}
-fn clear_sid(jar: CookieJar) -> CookieJar {
-    jar.remove(Cookie::build("sid").path("/").build())
 }
 pub async fn logout(
     State(appstate): State<Arc<AppState>>,
