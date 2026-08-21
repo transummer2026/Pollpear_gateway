@@ -1,4 +1,5 @@
 use axum::{extract::Request, http::HeaderValue, middleware::Next, response::Response};
+use axum_extra::extract::{CookieJar, cookie::Cookie};
 use hyper::header::COOKIE;
 use tracing::debug;
 
@@ -30,4 +31,8 @@ pub fn extract_sid(header_value: &str) -> Option<&str> {
     header_value
         .split("; ")
         .find_map(|part| part.strip_prefix("sid="))
+}
+
+pub fn clear_sid(jar: CookieJar) -> CookieJar {
+    jar.remove(Cookie::build("sid").path("/").build())
 }
