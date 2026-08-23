@@ -12,8 +12,15 @@ pub fn me_routes() -> Router<Arc<AppState>> {
     Router::new()
         .nest("/me", me())
         .nest("/me", avatar())
+        .nest("/me/notifications", notifications())
         .nest("/me/settings", settings())
         .nest("/me/settings/security", security())
+}
+
+fn notifications() -> Router<Arc<AppState>> {
+    Router::new()
+        .route("/", get(service::get_notifications))
+        .route("/read", patch(service::read_notifications))
 }
 
 fn me() -> Router<Arc<AppState>> {

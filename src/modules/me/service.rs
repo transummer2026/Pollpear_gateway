@@ -156,3 +156,27 @@ pub async fn revoke_apikey(
     )
     .await
 }
+
+pub async fn get_notifications(
+    State(appstate): State<Arc<AppState>>,
+    req: Request,
+) -> Result<Response, StatusCode> {
+    proxy_forward(
+        appstate.client_http.clone(),
+        appstate.service_url.me_service_url.clone(),
+        req,
+    )
+    .await
+}
+
+pub async fn read_notifications(
+    State(appstate): State<Arc<AppState>>,
+    req: Request,
+) -> Result<Response, StatusCode> {
+    proxy_forward(
+        appstate.client_http.clone(),
+        appstate.service_url.me_service_url.clone(),
+        req,
+    )
+    .await
+}
