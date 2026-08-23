@@ -21,6 +21,7 @@ fn notifications() -> Router<Arc<AppState>> {
     Router::new()
         .route("/", get(service::get_notifications))
         .route("/read", patch(service::read_notifications))
+        .route("/{id}", delete(service::dismiss_notification))
 }
 
 fn me() -> Router<Arc<AppState>> {

@@ -180,3 +180,15 @@ pub async fn read_notifications(
     )
     .await
 }
+
+pub async fn dismiss_notification(
+    State(appstate): State<Arc<AppState>>,
+    req: Request,
+) -> Result<Response, StatusCode> {
+    proxy_forward(
+        appstate.client_http.clone(),
+        appstate.service_url.me_service_url.clone(),
+        req,
+    )
+    .await
+}
