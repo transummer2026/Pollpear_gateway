@@ -7,6 +7,7 @@ pub mod feed;
 pub mod healthcheck;
 pub mod me;
 pub mod polls;
+pub mod ratelimit;
 pub mod redis;
 pub mod rooms;
 pub mod search;

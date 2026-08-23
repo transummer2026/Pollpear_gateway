@@ -1,5 +1,5 @@
 use crate::app::AppState;
-use crate::modules::apikey::service::{get_user_by_api_key, hash_api_key};
+use crate::modules::apikey::service::{extract_api_key, get_user_by_api_key, hash_api_key};
 use crate::modules::redis::service::RedisLookup;
 use axum::{
     extract::{Request, State},
@@ -15,13 +15,7 @@ pub async fn apikey(
     mut request: Request,
     next: Next,
 ) -> Response {
-    let api_key: Option<String> = request
-        .headers()
-        .get("x-api-key")
-        .and_then(|value| value.to_str().ok())
-        .map(str::to_owned);
-
-    let Some(api_key) = api_key else {
+    let Some(api_key) = extract_api_key(request.headers()) else {
         debug!("no api key header");
         return next.run(request).await;
     };
