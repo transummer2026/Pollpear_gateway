@@ -10,9 +10,6 @@ use hyper::StatusCode;
 use std::sync::Arc;
 use tracing::{debug, warn};
 
-const RATE_LIMIT: u64 = 100;
-const RATE_LIMIT_WINDOW_SECONDS: i64 = 60;
-
 pub async fn ratelimit(
     State(appstate): State<Arc<AppState>>,
     request: Request,
@@ -29,8 +26,8 @@ pub async fn ratelimit(
     match check_rate_limit(
         &mut con_redis,
         &key_hash,
-        RATE_LIMIT,
-        RATE_LIMIT_WINDOW_SECONDS,
+        appstate.settings.rate_limit,
+        appstate.settings.rate_limit_window_seconds,
     )
     .await
     {

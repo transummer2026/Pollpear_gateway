@@ -30,3 +30,9 @@ pub struct S3 {
 pub struct Ws {
     pub path: String,
 }
+
+#[derive(Deserialize)]
+pub struct RateLimit {
+    pub limit: String,
+    pub window_seconds: String,
+}

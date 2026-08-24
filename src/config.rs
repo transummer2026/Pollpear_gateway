@@ -26,6 +26,13 @@ pub struct ServiceUrl {
     pub garage_uploads_host: String,
 }
 
+#[derive(Clone)]
+pub struct Settings {
+    pub session_ttl: i64,
+    pub rate_limit: u64,
+    pub rate_limit_window_seconds: i64,
+}
+
 impl Config {
     fn init_dotenvy() {
         dotenvy::from_path(Path::new("../.env")).ok();
