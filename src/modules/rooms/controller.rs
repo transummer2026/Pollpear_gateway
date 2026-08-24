@@ -15,6 +15,7 @@ pub fn rooms_routes() -> Router<Arc<AppState>> {
 fn rooms() -> Router<Arc<AppState>> {
     Router::new()
         .route("/new", post(service::create))
+        .route("/", get(service::read))
         .route("/{id}", patch(service::update))
         .route("/{id}", delete(service::remove))
         .route(
