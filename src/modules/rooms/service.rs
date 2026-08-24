@@ -32,6 +32,18 @@ pub async fn read(
     .await
 }
 
+pub async fn read_one(
+    State(appstate): State<Arc<AppState>>,
+    req: Request,
+) -> Result<Response, StatusCode> {
+    proxy_forward(
+        appstate.client_http.clone(),
+        appstate.service_url.rooms_service_url.clone(),
+        req,
+    )
+    .await
+}
+
 pub async fn update(
     State(appstate): State<Arc<AppState>>,
     req: Request,
