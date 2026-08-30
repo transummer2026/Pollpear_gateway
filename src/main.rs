@@ -20,10 +20,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let config = Config::from_env();
 
-    let (service_url, ttl) =
+    let (service_url, settings) =
         bootstrap(&config.vault_url, config.vault_role, config.vault_secret).await?;
 
-    let app = app_routes(service_url, ttl).await?;
+    let app = app_routes(service_url, settings).await?;
 
     run(app, PORT.to_string()).await?;
 

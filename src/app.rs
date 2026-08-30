@@ -11,8 +11,10 @@ use crate::{
 use super::{
     clients::{ClientHTTP, create_client_http},
     config::ServiceUrl,
+    config::Settings,
     middleware::cors::cors,
     modules::admin::admin_routes,
+    modules::api::api_routes,
     modules::auth::auth_routes,
     modules::contact::contact_routes,
     modules::feed::feed_routes,
@@ -35,7 +37,7 @@ pub struct AppState {
     pub client_http: ClientHTTP,
     pub con_redis: MultiplexedConnection,
     pub service_url: ServiceUrl,
-    pub ttl: i64,
+    pub settings: Settings,
 }
 
 impl FromRef<AppState> for ClientHTTP {
@@ -56,7 +58,7 @@ impl FromRef<AppState> for ServiceUrl {
     }
 }
 
-pub async fn app_routes(service_url: ServiceUrl, ttl: i64) -> Result<Router, Box<dyn Error>> {
+pub async fn app_routes(service_url: ServiceUrl, settings: Settings) -> Result<Router, Box<dyn Error>> {
     let client_http = create_client_http();
     let con_redis = connect_redis(&service_url.redis_url).await?;
     let cors_layer = cors(&service_url.frontend_url);
@@ -64,14 +66,15 @@ pub async fn app_routes(service_url: ServiceUrl, ttl: i64) -> Result<Router, Box
         client_http,
         con_redis,
         service_url,
-        ttl,
+        settings,
     });
     Ok(Router::new()
         .nest(
             "/api",
             Router::new()
                 .merge(public_routes())
-                .merge(protected_routes(&app_state)),
+                .merge(protected_routes(&app_state))
+                .merge(api_routes(&app_state)),
         )
         .merge(healthcheck_routes())
         .route_layer(middleware::from_fn(x_user_id))

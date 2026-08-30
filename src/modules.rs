@@ -1,10 +1,13 @@
 pub mod admin;
+pub mod api;
+pub mod apikey;
 pub mod auth;
 pub mod contact;
 pub mod feed;
 pub mod healthcheck;
 pub mod me;
 pub mod polls;
+pub mod ratelimit;
 pub mod redis;
 pub mod rooms;
 pub mod search;

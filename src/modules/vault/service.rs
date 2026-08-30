@@ -6,9 +6,9 @@ use vaultrs::{
     kv2,
 };
 
-use crate::{clients::create_client_vault, config::ServiceUrl};
+use crate::{clients::create_client_vault, config::{ServiceUrl, Settings}};
 
-use super::{App, Redis, S3, Session, Ws};
+use super::{App, RateLimit, Redis, S3, Session, Ws};
 
 const MAX_ATTEMPTS: u32 = 3;
 
@@ -16,9 +16,9 @@ pub async fn bootstrap(
     vault_url: &str,
     role_id: String,
     secret_id: String,
-) -> Result<(ServiceUrl, i64), Box<dyn Error>> {
+) -> Result<(ServiceUrl, Settings), Box<dyn Error>> {
     for attempt in 1..=MAX_ATTEMPTS {
-        let result: Result<(ServiceUrl, i64), Box<dyn Error>> = async {
+        let result: Result<(ServiceUrl, Settings ), Box<dyn Error>> = async {
             let client = create_client_vault(vault_url)?;
             let client = approle_login(client, role_id.clone(), secret_id.clone()).await?;
 
@@ -27,11 +27,17 @@ pub async fn bootstrap(
             let session_secret = read_session(&client).await?;
             let s3_secret = read_s3(&client).await?;
             let ws_secret = read_ws(&client).await?;
+            let rate_limit_secret = read_rate_limit(&client).await?;
 
-            let ttl: i64 = session_secret.ttl.parse()?;
+            let settings = Settings {
+                session_ttl: session_secret.ttl.parse()?,
+                rate_limit: rate_limit_secret.limit.parse()?,
+                rate_limit_window_seconds: rate_limit_secret.window_seconds.parse()?,
+            };
 
             let service_url = ServiceUrl {
                 admin_service_url: app_secret.backend_url.clone(),
+                api_service_url: app_secret.backend_url.clone(),
                 auth_service_url: app_secret.backend_url.clone(),
                 contact_service_url: app_secret.backend_url.clone(),
                 feed_service_url: app_secret.backend_url.clone(),
@@ -54,7 +60,7 @@ pub async fn bootstrap(
                 garage_uploads_host: s3_secret.uploads_host,
             };
 
-            Ok((service_url, ttl))
+            Ok((service_url, settings))
         }
         .await;
 
@@ -117,6 +123,12 @@ pub async fn read_s3(client: &VaultClient) -> Result<S3, Box<dyn Error>> {
 
 pub async fn read_ws(client: &VaultClient) -> Result<Ws, Box<dyn Error>> {
     let secret = kv2::read(client, "secret", "pollpear/ws").await?;
+
+    Ok(secret)
+}
+
+pub async fn read_rate_limit(client: &VaultClient) -> Result<RateLimit, Box<dyn Error>> {
+    let secret = kv2::read(client, "secret", "pollpear/rate_limit").await?;
 
     Ok(secret)
 }

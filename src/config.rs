@@ -10,6 +10,7 @@ pub struct Config {
 #[derive(Clone)]
 pub struct ServiceUrl {
     pub admin_service_url: String,
+    pub api_service_url: String,
     pub auth_service_url: String,
     pub contact_service_url: String,
     pub feed_service_url: String,
@@ -23,6 +24,13 @@ pub struct ServiceUrl {
     pub redis_url: String,
     pub garage_url: String,
     pub garage_uploads_host: String,
+}
+
+#[derive(Clone)]
+pub struct Settings {
+    pub session_ttl: i64,
+    pub rate_limit: u64,
+    pub rate_limit_window_seconds: i64,
 }
 
 impl Config {
