@@ -20,10 +20,24 @@ fn rooms() -> Router<Arc<AppState>> {
         .route("/feed", get(service::read_many))
         .route("/{id}", patch(service::update))
         .route("/{id}", delete(service::remove))
+        .route("/{id}/invitations", get(service::get_invitations))
         .route(
-            "/{id}/participants/{userId}",
-            post(service::add_participant),
+            "/{id}/invitations/{userId}",
+            get(service::get_invitation),
         )
+        .route(
+            "/{id}/invitations/{userId}",
+            post(service::create_invitation),
+        )
+        .route(
+            "/{id}/invitations/{userId}",
+            patch(service::respond_invitation),
+        )
+        .route(
+            "/{id}/invitations/{userId}",
+            delete(service::remove_invitation),
+        )
+        .route("/{id}/participants", post(service::add_participant))
         .route(
             "/{id}/participants/{userId}",
             delete(service::remove_participant),
