@@ -80,6 +80,66 @@ pub async fn remove(
     .await
 }
 
+pub async fn get_invitations(
+    State(appstate): State<Arc<AppState>>,
+    req: Request,
+) -> Result<Response, StatusCode> {
+    proxy_forward(
+        appstate.client_http.clone(),
+        appstate.service_url.rooms_service_url.clone(),
+        req,
+    )
+    .await
+}
+
+pub async fn get_invitation(
+    State(appstate): State<Arc<AppState>>,
+    req: Request,
+) -> Result<Response, StatusCode> {
+    proxy_forward(
+        appstate.client_http.clone(),
+        appstate.service_url.rooms_service_url.clone(),
+        req,
+    )
+    .await
+}
+
+pub async fn create_invitation(
+    State(appstate): State<Arc<AppState>>,
+    req: Request,
+) -> Result<Response, StatusCode> {
+    proxy_forward(
+        appstate.client_http.clone(),
+        appstate.service_url.rooms_service_url.clone(),
+        req,
+    )
+    .await
+}
+
+pub async fn respond_invitation(
+    State(appstate): State<Arc<AppState>>,
+    req: Request,
+) -> Result<Response, StatusCode> {
+    proxy_forward(
+        appstate.client_http.clone(),
+        appstate.service_url.rooms_service_url.clone(),
+        req,
+    )
+    .await
+}
+
+pub async fn remove_invitation(
+    State(appstate): State<Arc<AppState>>,
+    req: Request,
+) -> Result<Response, StatusCode> {
+    proxy_forward(
+        appstate.client_http.clone(),
+        appstate.service_url.rooms_service_url.clone(),
+        req,
+    )
+    .await
+}
+
 pub async fn add_participant(
     State(appstate): State<Arc<AppState>>,
     req: Request,
