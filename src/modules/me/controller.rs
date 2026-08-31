@@ -29,6 +29,7 @@ fn me() -> Router<Arc<AppState>> {
         .route("/", get(service::my_profile))
         .route("/", patch(service::edit_profile))
         .route("/", delete(service::remove))
+        .route("/invitations", get(service::get_room_invitations))
 }
 
 fn avatar() -> Router<Arc<AppState>> {
