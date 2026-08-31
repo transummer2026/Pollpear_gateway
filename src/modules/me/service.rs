@@ -169,6 +169,18 @@ pub async fn get_notifications(
     .await
 }
 
+pub async fn get_room_invitations(
+    State(appstate): State<Arc<AppState>>,
+    req: Request,
+) -> Result<Response, StatusCode> {
+    proxy_forward(
+        appstate.client_http.clone(),
+        appstate.service_url.me_service_url.clone(),
+        req,
+    )
+    .await
+}
+
 pub async fn read_notifications(
     State(appstate): State<Arc<AppState>>,
     req: Request,
