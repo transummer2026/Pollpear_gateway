@@ -8,7 +8,10 @@ use vaultrs::{
     kv2,
 };
 
-use crate::{clients::create_client_vault, config::{ServiceUrl, Settings}};
+use crate::{
+    clients::create_client_vault,
+    config::{ServiceUrl, Settings},
+};
 
 use super::{App, RateLimit, Redis, S3, Session, Ws};
 
@@ -38,7 +41,7 @@ pub async fn bootstrap(
     secret_id: String,
 ) -> Result<(ServiceUrl, Settings), Box<dyn Error>> {
     for attempt in 1..=MAX_ATTEMPTS {
-        let result: Result<(ServiceUrl, Settings ), Box<dyn Error>> = async {
+        let result: Result<(ServiceUrl, Settings), Box<dyn Error>> = async {
             let client = create_client_vault(vault_url)?;
             let client = approle_login(client, role_id.clone(), secret_id.clone()).await?;
 
@@ -58,10 +61,8 @@ pub async fn bootstrap(
             };
 
             let service_url = ServiceUrl {
-                admin_service_url: app_secret.backend_url.clone(),
                 api_service_url: app_secret.backend_url.clone(),
                 auth_service_url: app_secret.backend_url.clone(),
-                contact_service_url: app_secret.backend_url.clone(),
                 feed_service_url: app_secret.backend_url.clone(),
                 me_service_url: app_secret.backend_url.clone(),
                 polls_service_url: app_secret.backend_url.clone(),
@@ -91,9 +92,7 @@ pub async fn bootstrap(
         match result {
             Ok(value) => return Ok(value),
             Err(err) if attempt < MAX_ATTEMPTS => {
-                tracing::warn!(
-                    "vault bootstrap failed (attempt {attempt}/{MAX_ATTEMPTS}): {err}"
-                );
+                tracing::warn!("vault bootstrap failed (attempt {attempt}/{MAX_ATTEMPTS}): {err}");
                 // Linear backoff: 200ms, then 400ms. Enough to ride out a Vault
                 // still coming up, short enough not to stall the deployment.
                 tokio::time::sleep(Duration::from_millis(200 * attempt as u64)).await;

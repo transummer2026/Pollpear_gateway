@@ -43,32 +43,6 @@ pub async fn update(
     .await
 }
 
-/// `DELETE /api/users/{id}` — deletes a user (moderation).
-pub async fn remove(
-    State(appstate): State<Arc<AppState>>,
-    req: Request,
-) -> Result<Response, StatusCode> {
-    proxy_forward(
-        appstate.client_http.clone(),
-        appstate.service_url.users_service_url.clone(),
-        req,
-    )
-    .await
-}
-
-/// `POST /api/users/{id}/report` — reports a user.
-pub async fn report(
-    State(appstate): State<Arc<AppState>>,
-    req: Request,
-) -> Result<Response, StatusCode> {
-    proxy_forward(
-        appstate.client_http.clone(),
-        appstate.service_url.users_service_url.clone(),
-        req,
-    )
-    .await
-}
-
 /// `GET /api/users/{id}/block` — whether the caller blocks this user.
 pub async fn get_block_status(
     State(appstate): State<Arc<AppState>>,
@@ -191,45 +165,6 @@ pub async fn update_friend_request(
 
 /// `DELETE /api/users/{id}/friendship` — removes a friendship or cancels a request.
 pub async fn remove_friendship(
-    State(appstate): State<Arc<AppState>>,
-    req: Request,
-) -> Result<Response, StatusCode> {
-    proxy_forward(
-        appstate.client_http.clone(),
-        appstate.service_url.users_service_url.clone(),
-        req,
-    )
-    .await
-}
-
-/// `POST /api/users/{id}/ban` — bans a user (moderation).
-pub async fn ban(
-    State(appstate): State<Arc<AppState>>,
-    req: Request,
-) -> Result<Response, StatusCode> {
-    proxy_forward(
-        appstate.client_http.clone(),
-        appstate.service_url.users_service_url.clone(),
-        req,
-    )
-    .await
-}
-
-/// `PATCH /api/users/{id}/ban` — amends a ban, for instance its duration.
-pub async fn update_ban(
-    State(appstate): State<Arc<AppState>>,
-    req: Request,
-) -> Result<Response, StatusCode> {
-    proxy_forward(
-        appstate.client_http.clone(),
-        appstate.service_url.users_service_url.clone(),
-        req,
-    )
-    .await
-}
-
-/// `DELETE /api/users/{id}/ban` — lifts a ban.
-pub async fn remove_ban(
     State(appstate): State<Arc<AppState>>,
     req: Request,
 ) -> Result<Response, StatusCode> {

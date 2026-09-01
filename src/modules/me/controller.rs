@@ -20,7 +20,6 @@ pub fn me_routes() -> Router<Arc<AppState>> {
         .nest("/me", me())
         .nest("/me", avatar())
         .nest("/me/notifications", notifications())
-        .nest("/me/settings", settings())
         .nest("/me/settings/security", security())
 }
 
@@ -47,13 +46,6 @@ fn me() -> Router<Arc<AppState>> {
 /// router, whose routes are all mounted at `/`.
 fn avatar() -> Router<Arc<AppState>> {
     Router::new().route("/avatar", post(service::upload_avatar))
-}
-
-/// Preferences: read and edit.
-fn settings() -> Router<Arc<AppState>> {
-    Router::new()
-        .route("/", get(service::my_settings))
-        .route("/", patch(service::edit_settings))
 }
 
 /// Security: password, and the API keys used on `/api/v1`.
