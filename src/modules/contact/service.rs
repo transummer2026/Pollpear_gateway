@@ -1,3 +1,5 @@
+//! Contact handler.
+
 use std::sync::Arc;
 
 use axum::{
@@ -8,6 +10,7 @@ use hyper::StatusCode;
 
 use crate::{app::AppState, proxy::proxy_forward};
 
+/// `POST /api/contact` — forwards the message to the contact service.
 pub async fn contact(
     State(appstate): State<Arc<AppState>>,
     req: Request,

@@ -1,3 +1,5 @@
+//! Cookie-based authentication for the web app.
+
 use crate::app::AppState;
 use crate::modules::redis::service::RedisLookup;
 use crate::modules::session::service::{get_session_user, refresh_ttl};
@@ -11,6 +13,21 @@ use axum_extra::extract::cookie::CookieJar;
 use std::sync::Arc;
 use tracing::{debug, warn};
 
+/// Resolves the `sid` cookie into a trusted `x-user-id` header.
+///
+/// Applied to every protected route. It authenticates but does not authorize:
+/// a request without a usable cookie is still forwarded, simply without an
+/// `x-user-id`, and upstream decides what an anonymous caller may do. Combined
+/// with [`crate::middleware::strip::x_user_id`] running earlier, the header is
+/// present only when this middleware put it there.
+///
+/// The three Redis outcomes are handled differently:
+///
+/// - **found** — inject `x-user-id` and refresh the session TTL;
+/// - **not found** — the cookie points at an expired or revoked session, so it
+///   is cleared on the response to stop the browser resending it;
+/// - **infrastructure error** — pass through untouched. The cookie may well be
+///   valid, and clearing it would log every user out over a transient outage.
 pub async fn session(
     State(appstate): State<Arc<AppState>>,
     jar: CookieJar,

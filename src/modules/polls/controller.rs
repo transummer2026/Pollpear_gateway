@@ -1,3 +1,5 @@
+//! `/api/polls` routes.
+
 use std::sync::Arc;
 
 use crate::app::AppState;
@@ -8,10 +10,18 @@ use axum::{
     routing::{delete, patch, post, get},
 };
 
+/// Declares the `/polls` subtree.
+///
+/// Session-protected: voting and moderation both need the caller's identity.
 pub fn polls_routes() -> Router<Arc<AppState>> {
     Router::new().nest("/polls", polls())
 }
 
+/// Polls, their options and the caller's vote.
+///
+/// A vote is not addressed by id: `/{id}/vote` always means *the caller's* vote
+/// on that poll, resolved upstream from `x-user-id`. Listing and reading share
+/// [`service::read`], which distinguishes them from the forwarded path.
 fn polls() -> Router<Arc<AppState>> {
     Router::new()
         .route("/new", post(service::create))

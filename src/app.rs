@@ -1,3 +1,36 @@
+//! Router assembly and shared application state.
+//!
+//! # Route layout
+//!
+//! ```text
+//! /health                      healthcheck, no auth, outside /api
+//! /api/auth/**                 public   — session is created here
+//! /api/contact                 public
+//! /api/uploads/*path           public   — proxied to Garage (S3)
+//! /api/{admin,feed,me,polls,rooms,search,users,ws}
+//!                              protected — session cookie required
+//! /api/v1/**                   API key + rate limit
+//! ```
+//!
+//! # Middleware order
+//!
+//! Layers added later wrap the ones added before, so on the request path the
+//! chain runs outside-in:
+//!
+//! ```text
+//! TraceLayer → CORS → x_user_id → [ session → sid ]      (protected routes)
+//!                              → [ ratelimit → apikey ]  (/api/v1)
+//! ```
+//!
+//! That ordering is the gateway's security invariant:
+//!
+//! - [`x_user_id`] runs first and drops any client-supplied `x-user-id`, so the
+//!   header can only ever be set by the gateway itself;
+//! - [`session`] then resolves the `sid` cookie against Redis and re-injects a
+//!   trusted `x-user-id`;
+//! - [`sid`] runs last and strips the `sid` cookie, so upstream services never
+//!   receive the session secret.
+
 use std::{error::Error, sync::Arc};
 
 use crate::{
@@ -32,11 +65,19 @@ use redis::aio::MultiplexedConnection;
 use tower::ServiceBuilder;
 use tower_http::trace::TraceLayer;
 
+/// State shared by every handler, held behind an [`Arc`].
+///
+/// Cheap to clone: the HTTP client and the Redis connection are handles, and
+/// the two config structs are read-only for the lifetime of the process.
 #[derive(Clone)]
 pub struct AppState {
+    /// Pooled client used to reach upstream services and Garage.
     pub client_http: ClientHTTP,
+    /// Redis connection backing sessions, API keys and rate limiting.
     pub con_redis: MultiplexedConnection,
+    /// Upstream addresses resolved from Vault at boot.
     pub service_url: ServiceUrl,
+    /// Policy values (session TTL, rate limit) resolved from Vault at boot.
     pub settings: Settings,
 }
 
@@ -58,6 +99,15 @@ impl FromRef<AppState> for ServiceUrl {
     }
 }
 
+/// Builds the complete router and the state it carries.
+///
+/// Connects to Redis on the way — a failure here aborts startup, since no
+/// request could be authenticated without it.
+///
+/// `/health` is merged outside the `/api` nest so probes stay reachable
+/// independently of the API surface. The `x_user_id` guard is added with
+/// [`Router::route_layer`] so it applies to matched routes only, leaving 404s
+/// to short-circuit without running middleware.
 pub async fn app_routes(service_url: ServiceUrl, settings: Settings) -> Result<Router, Box<dyn Error>> {
     let client_http = create_client_http();
     let con_redis = connect_redis(&service_url.redis_url).await?;
@@ -86,6 +136,10 @@ pub async fn app_routes(service_url: ServiceUrl, settings: Settings) -> Result<R
         .with_state(app_state))
 }
 
+/// Routes reachable without a session.
+///
+/// `auth` is where a session is created, `contact` accepts anonymous messages,
+/// and `uploads` serves public media straight from Garage.
 fn public_routes() -> Router<Arc<AppState>> {
     Router::new()
         .merge(auth_routes())
@@ -93,6 +147,17 @@ fn public_routes() -> Router<Arc<AppState>> {
         .merge(uploads_routes())
 }
 
+/// Routes behind the session cookie.
+///
+/// [`session`] is added last so it wraps [`sid`]: the cookie is read and
+/// resolved to an `x-user-id` first, then stripped before the request leaves
+/// the gateway.
+///
+/// Note that [`session`] does not reject unauthenticated callers — it only
+/// resolves identity when a valid cookie is present. Enforcement lives
+/// upstream, which sees either a trusted `x-user-id` or none at all. The one
+/// exception is [`crate::modules::ws`], which rejects the handshake itself
+/// because a WebSocket upgrade cannot be replayed.
 fn protected_routes(app_state: &Arc<AppState>) -> Router<Arc<AppState>> {
     Router::new()
         .merge(admin_routes())

@@ -1,3 +1,5 @@
+//! Admin handlers.
+
 use std::sync::Arc;
 
 use axum::{
@@ -8,6 +10,7 @@ use hyper::StatusCode;
 
 use crate::{app::AppState, proxy::proxy_forward};
 
+/// `GET /api/admin/` — forwards the dashboard request to the admin service.
 pub async fn dashboard(
     State(appstate): State<Arc<AppState>>,
     req: Request,

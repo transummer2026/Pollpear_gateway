@@ -1,3 +1,5 @@
+//! `/api/rooms` routes.
+
 use std::sync::Arc;
 
 use crate::app::AppState;
@@ -8,10 +10,20 @@ use axum::{
     routing::{delete, get, patch, post},
 };
 
+/// Declares the `/rooms` subtree.
+///
+/// Session-protected: room access depends entirely on who the caller is.
 pub fn rooms_routes() -> Router<Arc<AppState>> {
     Router::new().nest("/rooms", rooms())
 }
 
+/// Rooms and their three sub-resources: invitations, participants, messages.
+///
+/// `/feed` is declared after `/{id}` but still wins: axum matches the literal
+/// segment before the parameter, so ordering here is presentational only.
+///
+/// An invitation is keyed by `{id}/{userId}` — one per room and user — which is
+/// why the whole invitation lifecycle hangs off that single path.
 fn rooms() -> Router<Arc<AppState>> {
     Router::new()
         .route("/new", post(service::create))

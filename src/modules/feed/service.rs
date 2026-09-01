@@ -1,3 +1,5 @@
+//! Feed handler.
+
 use std::sync::Arc;
 
 use axum::{
@@ -8,6 +10,7 @@ use hyper::StatusCode;
 
 use crate::{app::AppState, proxy::proxy_forward};
 
+/// `GET /api/feed` — forwards to the feed service, query string included.
 pub async fn feed(
     State(appstate): State<Arc<AppState>>,
     req: Request,

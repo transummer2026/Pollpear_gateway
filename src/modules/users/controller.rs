@@ -1,3 +1,5 @@
+//! `/api/users` routes.
+
 use std::sync::Arc;
 
 use crate::app::AppState;
@@ -8,10 +10,19 @@ use axum::{
     routing::{delete, get, patch, post},
 };
 
+/// Declares the `/users` subtree.
+///
+/// Session-protected. Everything is addressed by `{id}`, in contrast with
+/// [`crate::modules::me`], which is scoped to the caller.
 pub fn users_routes() -> Router<Arc<AppState>> {
     Router::new().nest("/users", users())
 }
 
+/// Profiles, blocks, friendships and moderation actions.
+///
+/// Same-path/different-method pairs are deliberate: `/block`, `/friendship` and
+/// `/ban` each model one relationship as a single resource, so its lifecycle
+/// reads as `GET`/`POST`/`PATCH`/`DELETE` on one URL.
 fn users() -> Router<Arc<AppState>> {
     Router::new()
         .route("/{id}", get(service::get_one))

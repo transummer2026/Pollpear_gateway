@@ -1,3 +1,5 @@
+//! WebSocket relaying to the back end.
+
 mod controller;
 mod service;
 

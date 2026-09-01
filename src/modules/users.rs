@@ -1,3 +1,5 @@
+//! Other users' profiles, relationships and moderation.
+
 mod controller;
 mod service;
 

@@ -1,3 +1,5 @@
+//! `/api/v1` handler.
+
 use std::sync::Arc;
 
 use axum::{
@@ -8,6 +10,11 @@ use hyper::StatusCode;
 
 use crate::{app::AppState, proxy::proxy_forward};
 
+/// `ANY /api/v1/**` — forwards to the API service.
+///
+/// Path and method are passed through untouched; the upstream owns routing and
+/// authorisation. The gateway's contribution is the `x-user-id` resolved from
+/// the API key, or its absence.
 pub async fn proxy(
     State(appstate): State<Arc<AppState>>,
     req: Request,
