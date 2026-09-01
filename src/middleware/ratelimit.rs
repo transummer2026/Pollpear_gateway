@@ -1,3 +1,5 @@
+//! Per-API-key quota on `/api/v1`.
+
 use crate::app::AppState;
 use crate::modules::apikey::service::{extract_api_key, hash_api_key};
 use crate::modules::ratelimit::service::{RateLimitDecision, check_rate_limit};
@@ -10,6 +12,19 @@ use hyper::StatusCode;
 use std::sync::Arc;
 use tracing::{debug, warn};
 
+/// Counts `/api/v1` requests per API key and rejects those over quota.
+///
+/// Outermost layer on `/api/v1`, so it runs before
+/// [`crate::middleware::apikey::apikey`] resolves the key: counting on the key
+/// *hash* means an unknown or revoked key is throttled just like a valid one,
+/// which is what keeps the key space from being enumerated.
+///
+/// Requests with no `x-api-key` are not counted — they will be rejected
+/// upstream for lack of identity anyway. Quota and window come from the Vault
+/// [`Settings`](crate::config::Settings).
+///
+/// A Redis outage lets the request through: a broken counter should not take
+/// the whole API down.
 pub async fn ratelimit(
     State(appstate): State<Arc<AppState>>,
     request: Request,

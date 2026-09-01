@@ -1,3 +1,9 @@
+//! Forwarding primitives: HTTP pass-through and WebSocket relaying.
+//!
+//! Everything routed by the gateway ends up here. HTTP requests go through
+//! [`proxy_forward`]; WebSocket sessions are split into two independent
+//! [`proxy_upstream`] / [`proxy_downstream`] pumps.
+
 use super::clients::ClientHTTP;
 use axum::{
     extract::{
@@ -16,8 +22,16 @@ use tokio::net::TcpStream;
 use tokio_tungstenite::{MaybeTlsStream, WebSocketStream, tungstenite::Message as BackMsg};
 use tracing::{debug, error};
 
+/// Client-side socket to the backend, TLS-capable.
 type BackendSocket = WebSocketStream<MaybeTlsStream<TcpStream>>;
 
+/// Returns the URI the client actually sent.
+///
+/// [`Router::nest`](axum::Router::nest) rewrites `req.uri()` to the path
+/// *relative to the nest*, which would drop the `/api` prefix and any parent
+/// segment. Axum stores the untouched URI in the [`OriginalUri`] extension, so
+/// forwarding must read it from there and only fall back to `req.uri()` when
+/// the request was not nested.
 pub fn original_uri(req: &Request) -> Uri {
     match req.extensions().get::<OriginalUri>() {
         Some(orig) => orig.0.clone(),
@@ -25,6 +39,21 @@ pub fn original_uri(req: &Request) -> Uri {
     }
 }
 
+/// Forwards an HTTP request to `service_url` and returns the upstream response.
+///
+/// The request is passed through as-is — method, headers and streamed body —
+/// with only the URI rewritten: the `/api` prefix is stripped, so
+/// `GET /api/rooms/42` reaches the upstream as `GET /rooms/42`.
+///
+/// Headers are *not* filtered here. Stripping happens earlier in the chain
+/// ([`crate::middleware::strip`]), which is what keeps the `sid` cookie and any
+/// client-supplied `x-user-id` from reaching upstream.
+///
+/// # Errors
+///
+/// [`StatusCode::BAD_GATEWAY`] if the rewritten target is not a valid URI or if
+/// the upstream call fails. Upstream error statuses are not errors here: they
+/// are returned to the client unchanged.
 pub async fn proxy_forward(
     client_http: ClientHTTP,
     service_url: String,
@@ -55,6 +84,12 @@ pub async fn proxy_forward(
     Ok(response.into_response())
 }
 
+/// Pumps browser → backend frames until either side closes.
+///
+/// A `Close` frame is forwarded first and only then breaks the loop, so the
+/// backend learns why the client left instead of seeing a dropped socket. The
+/// backend sender is closed on exit whatever the reason, which unblocks
+/// [`proxy_downstream`] on the other half of the session.
 pub async fn proxy_upstream(
     mut receiver_front: SplitStream<WebSocket>,
     mut sender_back: SplitSink<BackendSocket, BackMsg>,
@@ -85,6 +120,11 @@ pub async fn proxy_upstream(
     let _ = sender_back.close().await;
 }
 
+/// Pumps backend → browser frames until either side closes.
+///
+/// Mirror of [`proxy_upstream`], with one asymmetry: raw
+/// [`BackMsg::Frame`] values have no axum equivalent and are skipped rather
+/// than relayed.
 pub async fn proxy_downstream(
     mut receiver_back: SplitStream<BackendSocket>,
     mut sender_front: SplitSink<WebSocket, FrontMsg>,
@@ -119,6 +159,11 @@ pub async fn proxy_downstream(
     let _ = sender_front.close().await;
 }
 
+/// Converts an axum frame into its tungstenite equivalent.
+///
+/// Purely mechanical: the two crates model the same protocol with different
+/// types. Payloads are re-borrowed rather than copied where the representation
+/// allows it.
 fn front_to_back(message: FrontMsg) -> BackMsg {
     match message {
         FrontMsg::Text(t) => BackMsg::Text(t.as_str().into()),
@@ -136,6 +181,11 @@ fn front_to_back(message: FrontMsg) -> BackMsg {
     }
 }
 
+/// Converts a tungstenite frame into its axum equivalent.
+///
+/// Returns [`None`] for [`BackMsg::Frame`], the raw variant tungstenite exposes
+/// for low-level use: axum has no counterpart, and it never appears on a normal
+/// message stream, so the caller simply skips it.
 fn back_to_front(message: BackMsg) -> Option<FrontMsg> {
     match message {
         BackMsg::Text(t) => Some(FrontMsg::Text(t.as_str().into())),

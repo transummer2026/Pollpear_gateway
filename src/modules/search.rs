@@ -1,3 +1,5 @@
+//! Search, proxied to the search service.
+
 mod controller;
 mod service;
 

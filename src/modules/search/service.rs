@@ -1,3 +1,5 @@
+//! Search handler.
+
 use std::sync::Arc;
 
 use axum::{
@@ -8,6 +10,7 @@ use hyper::StatusCode;
 
 use crate::{app::AppState, proxy::proxy_forward};
 
+/// `GET /api/search` — forwards to the search service, query string included.
 pub async fn search(
     State(appstate): State<Arc<AppState>>,
     req: Request,
