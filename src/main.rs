@@ -23,9 +23,7 @@ mod server;
 
 use std::error::Error;
 
-use crate::{
-    app::app_routes, config::Config, modules::vault::service::bootstrap, server::run,
-};
+use crate::{app::app_routes, config::Config, modules::vault::service::bootstrap, server::run};
 
 /// TCP port the gateway listens on. Fixed: the deployment maps it externally.
 const PORT: &str = "8080";

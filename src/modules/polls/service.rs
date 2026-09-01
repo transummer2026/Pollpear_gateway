@@ -68,45 +68,6 @@ pub async fn remove(
     .await
 }
 
-/// `POST /api/polls/{id}/report` — reports a poll.
-pub async fn report(
-    State(appstate): State<Arc<AppState>>,
-    req: Request,
-) -> Result<Response, StatusCode> {
-    proxy_forward(
-        appstate.client_http.clone(),
-        appstate.service_url.polls_service_url.clone(),
-        req,
-    )
-    .await
-}
-
-/// `POST /api/polls/{id}/options/{optionId}/report` — reports one option.
-pub async fn report_option(
-    State(appstate): State<Arc<AppState>>,
-    req: Request,
-) -> Result<Response, StatusCode> {
-    proxy_forward(
-        appstate.client_http.clone(),
-        appstate.service_url.polls_service_url.clone(),
-        req,
-    )
-    .await
-}
-
-/// `DELETE /api/polls/{id}/options/{optionId}` — removes an option.
-pub async fn remove_option(
-    State(appstate): State<Arc<AppState>>,
-    req: Request,
-) -> Result<Response, StatusCode> {
-    proxy_forward(
-        appstate.client_http.clone(),
-        appstate.service_url.polls_service_url.clone(),
-        req,
-    )
-    .await
-}
-
 /// `POST /api/polls/{id}/vote` — casts the caller's vote.
 pub async fn create_vote(
     State(appstate): State<Arc<AppState>>,
@@ -135,19 +96,6 @@ pub async fn update_vote(
 
 /// `DELETE /api/polls/{id}/vote` — withdraws the caller's vote.
 pub async fn remove_vote(
-    State(appstate): State<Arc<AppState>>,
-    req: Request,
-) -> Result<Response, StatusCode> {
-    proxy_forward(
-        appstate.client_http.clone(),
-        appstate.service_url.polls_service_url.clone(),
-        req,
-    )
-    .await
-}
-
-/// `POST /api/polls/{id}/vote/report` — reports vote activity on a poll.
-pub async fn report_vote(
     State(appstate): State<Arc<AppState>>,
     req: Request,
 ) -> Result<Response, StatusCode> {
