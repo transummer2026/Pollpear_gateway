@@ -33,7 +33,10 @@ fn rooms() -> Router<Arc<AppState>> {
         .route("/{id}", patch(service::update))
         .route("/{id}", delete(service::remove))
         .route("/{id}/invitations", get(service::get_invitations))
-        .route("/{id}/invitations/{userId}", get(service::get_invitation))
+        .route(
+            "/{id}/invitations/{userId}",
+            get(service::get_invitation),
+        )
         .route(
             "/{id}/invitations/{userId}",
             post(service::create_invitation),
@@ -53,4 +56,8 @@ fn rooms() -> Router<Arc<AppState>> {
         )
         .route("/{id}/messages", get(service::get_messages))
         .route("/{id}/messages", post(service::create_message))
+        .route(
+            "/{id}/messages/{messageId}",
+            delete(service::remove_message),
+        )
 }

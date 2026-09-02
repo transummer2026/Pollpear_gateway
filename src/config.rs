@@ -34,10 +34,14 @@ pub struct Config {
 /// with no route to touch.
 #[derive(Clone)]
 pub struct ServiceUrl {
+    /// Upstream serving `/api/admin`.
+    pub admin_service_url: String,
     /// Upstream serving the public `/api/v1` API-key surface.
     pub api_service_url: String,
     /// Upstream serving `/api/auth` and `/api/auth/oauth`.
     pub auth_service_url: String,
+    /// Upstream serving `/api/contact`.
+    pub contact_service_url: String,
     /// Upstream serving `/api/feed`.
     pub feed_service_url: String,
     /// Upstream serving `/api/me`.

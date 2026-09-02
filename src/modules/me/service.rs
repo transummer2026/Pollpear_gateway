@@ -93,6 +93,31 @@ pub async fn upload_avatar(
     )
     .await
 }
+/// `GET /api/me/settings/` — the caller's preferences.
+pub async fn my_settings(
+    State(appstate): State<Arc<AppState>>,
+    req: Request,
+) -> Result<Response, StatusCode> {
+    proxy_forward(
+        appstate.client_http.clone(),
+        appstate.service_url.me_service_url.clone(),
+        req,
+    )
+    .await
+}
+
+/// `PATCH /api/me/settings/` — updates the caller's preferences.
+pub async fn edit_settings(
+    State(appstate): State<Arc<AppState>>,
+    req: Request,
+) -> Result<Response, StatusCode> {
+    proxy_forward(
+        appstate.client_http.clone(),
+        appstate.service_url.me_service_url.clone(),
+        req,
+    )
+    .await
+}
 
 /// `PUT /api/me/settings/security/` — changes the password.
 ///

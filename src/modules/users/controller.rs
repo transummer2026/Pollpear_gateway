@@ -18,15 +18,17 @@ pub fn users_routes() -> Router<Arc<AppState>> {
     Router::new().nest("/users", users())
 }
 
-/// Profiles, blocks and friendships.
+/// Profiles, blocks, friendships and moderation actions.
 ///
-/// Same-path/different-method pairs are deliberate: `/block` and `/friendship`
-/// each model one relationship as a single resource, so its lifecycle reads as
-/// `GET`/`POST`/`PATCH`/`DELETE` on one URL.
+/// Same-path/different-method pairs are deliberate: `/block`, `/friendship` and
+/// `/ban` each model one relationship as a single resource, so its lifecycle
+/// reads as `GET`/`POST`/`PATCH`/`DELETE` on one URL.
 fn users() -> Router<Arc<AppState>> {
     Router::new()
         .route("/{id}", get(service::get_one))
         .route("/{id}", patch(service::update))
+        .route("/{id}", delete(service::remove))
+        .route("/{id}/report", post(service::report))
         .route("/{id}/block", get(service::get_block_status))
         .route("/{id}/block", post(service::block))
         .route("/{id}/block", delete(service::unblock))
@@ -37,4 +39,7 @@ fn users() -> Router<Arc<AppState>> {
         .route("/{id}/friendship", delete(service::remove_friendship))
         .route("/{id}/friends", get(service::get_friends))
         .route("/{id}/friend-requests", get(service::get_friend_requests))
+        .route("/{id}/ban", post(service::ban))
+        .route("/{id}/ban", patch(service::update_ban))
+        .route("/{id}/ban", delete(service::remove_ban))
 }

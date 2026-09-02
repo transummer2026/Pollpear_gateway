@@ -2,9 +2,9 @@
 //!
 //! Two kinds live side by side:
 //!
-//! - **Routed modules** — [`api`], [`auth`], [`feed`], [`healthcheck`], [`me`],
-//!   [`polls`], [`rooms`], [`search`], [`uploads`], [`users`], [`ws`]. Each has
-//!   a `controller` declaring the routes and a
+//! - **Routed modules** — [`admin`], [`api`], [`auth`], [`contact`], [`feed`],
+//!   [`healthcheck`], [`me`], [`polls`], [`rooms`], [`search`], [`uploads`],
+//!   [`users`], [`ws`]. Each has a `controller` declaring the routes and a
 //!   `service` holding the handlers, and each exposes a single `*_routes()`
 //!   function that [`crate::app`] merges.
 //! - **Infrastructure modules** — [`apikey`], [`ratelimit`], [`redis`],
@@ -16,9 +16,11 @@
 //! logout), [`me`] (account deletion), plus [`uploads`] and [`ws`], which
 //! forward to Garage and to the backend socket instead of an HTTP service.
 
+pub mod admin;
 pub mod api;
 pub mod apikey;
 pub mod auth;
+pub mod contact;
 pub mod feed;
 pub mod healthcheck;
 pub mod me;

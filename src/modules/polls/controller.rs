@@ -7,7 +7,7 @@ use crate::app::AppState;
 use super::service;
 use axum::{
     Router,
-    routing::{delete, get, patch, post},
+    routing::{delete, patch, post, get},
 };
 
 /// Declares the `/polls` subtree.
@@ -29,7 +29,14 @@ fn polls() -> Router<Arc<AppState>> {
         .route("/{id}", get(service::read))
         .route("/{id}", patch(service::update))
         .route("/{id}", delete(service::remove))
+        .route("/{id}/report", post(service::report))
+        .route(
+            "/{id}/options/{optionId}/report",
+            post(service::report_option),
+        )
+        .route("/{id}/options/{optionId}", delete(service::remove_option))
         .route("/{id}/vote", post(service::create_vote))
         .route("/{id}/vote", patch(service::update_vote))
         .route("/{id}/vote", delete(service::remove_vote))
+        .route("/{id}/vote/report", post(service::report_vote))
 }
