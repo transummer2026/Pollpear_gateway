@@ -5,8 +5,9 @@
 //! ```text
 //! /health                      healthcheck, no auth, outside /api
 //! /api/auth/**                 public   — session is created here
+//! /api/contact                 public
 //! /api/uploads/*path           public   — proxied to Garage (S3)
-//! /api/{feed,me,polls,rooms,search,users,ws}
+//! /api/{admin,feed,me,polls,rooms,search,users,ws}
 //!                              protected — session cookie required
 //! /api/v1/**                   API key + rate limit
 //! ```
@@ -45,8 +46,10 @@ use super::{
     config::ServiceUrl,
     config::Settings,
     middleware::cors::cors,
+    modules::admin::admin_routes,
     modules::api::api_routes,
     modules::auth::auth_routes,
+    modules::contact::contact_routes,
     modules::feed::feed_routes,
     modules::healthcheck::healthcheck_routes,
     modules::me::me_routes,
@@ -105,10 +108,7 @@ impl FromRef<AppState> for ServiceUrl {
 /// independently of the API surface. The `x_user_id` guard is added with
 /// [`Router::route_layer`] so it applies to matched routes only, leaving 404s
 /// to short-circuit without running middleware.
-pub async fn app_routes(
-    service_url: ServiceUrl,
-    settings: Settings,
-) -> Result<Router, Box<dyn Error>> {
+pub async fn app_routes(service_url: ServiceUrl, settings: Settings) -> Result<Router, Box<dyn Error>> {
     let client_http = create_client_http();
     let con_redis = connect_redis(&service_url.redis_url).await?;
     let cors_layer = cors(&service_url.frontend_url);
@@ -138,10 +138,13 @@ pub async fn app_routes(
 
 /// Routes reachable without a session.
 ///
-/// `auth` is where a session is created, and `uploads` serves public media
-/// straight from Garage.
+/// `auth` is where a session is created, `contact` accepts anonymous messages,
+/// and `uploads` serves public media straight from Garage.
 fn public_routes() -> Router<Arc<AppState>> {
-    Router::new().merge(auth_routes()).merge(uploads_routes())
+    Router::new()
+        .merge(auth_routes())
+        .merge(contact_routes())
+        .merge(uploads_routes())
 }
 
 /// Routes behind the session cookie.
@@ -157,6 +160,7 @@ fn public_routes() -> Router<Arc<AppState>> {
 /// because a WebSocket upgrade cannot be replayed.
 fn protected_routes(app_state: &Arc<AppState>) -> Router<Arc<AppState>> {
     Router::new()
+        .merge(admin_routes())
         .merge(feed_routes())
         .merge(me_routes())
         .merge(polls_routes())
